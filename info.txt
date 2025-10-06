@@ -1,0 +1,5 @@
+admin@gmail.com
+123456789
+
+//api
+https://api.maghni.acwad.tech/api/docs?fbclid=IwY2xjawNKmP5leHRuA2FlbQIxMABicmlkETBIVVB3ZWU3b2duRlRFTzBYAR5Vdl-AtUZwZRuH3q7elAx4XLG7_C18cHafxNtnfbsStD4L9_icRcLreuiqNQ_aem_tmrOTsxjz9bHW5Bnsup4vg
