@@ -13,6 +13,8 @@ import SettingsPage from './pages/Settings/Settings';
 import Vendors from './pages/Vendors/Vendors';
 import VendorOverview from './pages/Vendors/VendorOverview';
 import VendorsStatistics from './pages/VendorsStatistics';
+import RequireBack from './pages/Auth/RequireBack';
+import RequireAuth from './pages/Auth/RequireAuth';
 
 function App() {
   const location = useLocation();
@@ -33,26 +35,32 @@ function App() {
   ];
 
   return (
-    <DashboardLayout
-      sidebarItems={sidebarItems}
-      activePath={location.pathname}
-      brandName="Maghani Store"
-    >
-      <Routes>
+    <Routes>
+      {/* لو المستخدم داخل بالفعل، مايرجعش للوجن */}
+      <Route path="/login" element={<RequireBack><Login /></RequireBack>} />
 
-        <Route path='login' element={<Login />} />
-
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/banners" element={<Banners />} />
-        <Route path="/coupons" element={<Coupons />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/vendors" element={<Vendors />} />
-        <Route path="/vendors/overview" element={<VendorOverview />} />
-        <Route path="/vendors/statistics" element={<VendorsStatistics />} />
-      </Routes>
-    </DashboardLayout>
+      {/* باقي الصفحات محتاجة توكن */}
+      <Route
+        path="/*"
+        element={
+          <RequireAuth>
+            <DashboardLayout sidebarItems={sidebarItems} activePath={location.pathname} brandName="Maghani Store">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/banners" element={<Banners />} />
+                <Route path="/coupons" element={<Coupons />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/vendors" element={<Vendors />} />
+                <Route path="/vendors/overview" element={<VendorOverview />} />
+                <Route path="/vendors/statistics" element={<VendorsStatistics />} />
+              </Routes>
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+    </Routes>
   );
 }
 
