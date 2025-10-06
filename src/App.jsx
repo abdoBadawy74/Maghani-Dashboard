@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Home, Package, ShoppingCart, Users, Settings, BarChart3, Puzzle, ChartColumnStacked, Store, } from 'lucide-react';
-import { DashboardLayout } from './Component/DashboardLayout';
+import { DashboardLayout } from './Components/DashboardLayout';
 import { Dashboard } from './pages/Dashboard';
 import Login from './pages/Auth/Login';
 import Banners from './pages/Banners/Banners';
@@ -9,8 +9,9 @@ import { FaInfoCircle } from "react-icons/fa";
 import Coupons from './pages/Coupons/Coupons';
 import Orders from './pages/Orders/Orders';
 import Categories from './pages/Categories/Categories';
-import  SettingsPage from './pages/Settings/Settings';
+import SettingsPage from './pages/Settings/Settings';
 import Vendors from './pages/Vendors/Vendors';
+import VendorOverview from './pages/Vendors/VendorOverview';
 
 function App() {
   const location = useLocation();
@@ -46,7 +47,7 @@ function App() {
         <Route path="/categories" element={<Categories />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/vendors" element={<Vendors />} />
-
+        <Route path="/vendors/overview" element={<VendorOverview />} />
 
         {/* <Route path="/products" element={<Products />} />
         <Route path="/orders" element={<Orders />} />

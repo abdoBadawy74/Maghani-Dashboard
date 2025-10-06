@@ -1,6 +1,6 @@
 import { TrendingUp, Package, ShoppingCart, Users } from 'lucide-react';
-import { StatsCard } from '../Component/StatsCard';
-import { Table, } from '../Component/Table';
+import { StatsCard } from '../Components/StatsCard';
+import { Table, } from '../Components/Table';
 
 
 

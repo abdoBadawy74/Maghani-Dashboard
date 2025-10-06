@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -76,7 +77,8 @@ export default function Vendors() {
             );
 
             const data = await res.json();
-            if (res.ok && data.success) {
+            console.log(res);
+            if (res.ok) {
                 toast.success("🔄 Vendor block status updated");
                 fetchVendors();
             } else {
@@ -102,7 +104,7 @@ export default function Vendors() {
             );
 
             const data = await res.json();
-            if (res.ok && data.success) {
+            if (res.ok) {
                 toast.success("✅ Vendor open/close status updated");
                 fetchVendors();
             } else {
@@ -118,8 +120,15 @@ export default function Vendors() {
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <ToastContainer />
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">🏪 Vendors</h1>
-
+          <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold text-gray-800 mb-6">🏪 Vendors</h1>
+              <Link
+                  to="/vendors/overview"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                  Go to Overview
+              </Link>
+          </div>
             {loading ? (
                 <p className="text-center text-lg">Loading vendors...</p>
             ) : (
