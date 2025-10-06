@@ -4,6 +4,7 @@ import DeliveryTime from "../../Components/DeliveryTime";
 import GrowthTrend from "../../Components/GrowthTrend";
 import Locations from "../../Components/Locations";
 import MostFavorited from "../../Components/MostFavorited";
+import TopPerformingVendors from "../../Components/topRated";
 
 export default function VendorOverview() {
   const [activeTab, setActiveTab] = useState("deliveryFee");
@@ -20,6 +21,8 @@ export default function VendorOverview() {
         return <Locations />;
       case "mostFavorited":
         return <MostFavorited />;
+      case "topRated":
+        return <TopPerformingVendors />;
       default:
         return <DeliveryFee />;
     }
@@ -39,15 +42,15 @@ export default function VendorOverview() {
           { id: "growthTrend", label: "Growth Trend" },
           { id: "locations", label: "Locations" },
           { id: "mostFavorited", label: "Most Favorited" },
+          { id: "topRated", label: "Top Rated" },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === tab.id
+            className={`px-4 py-2 rounded-lg transition-colors ${activeTab === tab.id
                 ? "bg-blue-600 text-white"
                 : "bg-white text-gray-700 border hover:bg-gray-100"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
