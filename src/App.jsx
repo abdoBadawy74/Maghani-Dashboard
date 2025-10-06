@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Home, Package, ShoppingCart, Users, Settings, BarChart3, Puzzle, ChartColumnStacked, Store, } from 'lucide-react';
+import { Home, Package, ShoppingCart, Users, Settings, BarChart3, Puzzle, ChartColumnStacked, Store, ChartBar, } from 'lucide-react';
 import { DashboardLayout } from './Components/DashboardLayout';
 import { Dashboard } from './pages/Dashboard';
 import Login from './pages/Auth/Login';
@@ -12,6 +12,7 @@ import Categories from './pages/Categories/Categories';
 import SettingsPage from './pages/Settings/Settings';
 import Vendors from './pages/Vendors/Vendors';
 import VendorOverview from './pages/Vendors/VendorOverview';
+import VendorsStatistics from './pages/VendorsStatistics';
 
 function App() {
   const location = useLocation();
@@ -24,10 +25,11 @@ function App() {
     { label: 'Categories', icon: ChartColumnStacked, path: '/categories' },
     { label: 'Settings', icon: Settings, path: '/settings' },
     { label: 'Vendors', icon: Store, path: '/vendors' },
+    { label: 'Statistics', icon: ChartBar, path: '/vendors/statistics' },
 
-    { label: 'Products', icon: Package, path: '/products' },
-    { label: 'Customers', icon: Users, path: '/customers' },
-    { label: 'Analytics', icon: BarChart3, path: '/analytics' },
+    // { label: 'Products', icon: Package, path: '/products' },
+    // { label: 'Customers', icon: Users, path: '/customers' },
+    // { label: 'Analytics', icon: BarChart3, path: '/analytics' },
   ];
 
   return (
@@ -48,7 +50,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/vendors" element={<Vendors />} />
         <Route path="/vendors/overview" element={<VendorOverview />} />
-
+        <Route path="/vendors/statistics" element={<VendorsStatistics />} />
         {/* <Route path="/products" element={<Products />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/customers" element={<Customers />} />
