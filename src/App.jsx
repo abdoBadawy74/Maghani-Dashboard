@@ -36,7 +36,7 @@ function App() {
     <DashboardLayout
       sidebarItems={sidebarItems}
       activePath={location.pathname}
-      brandName="MyStore"
+      brandName="Maghani Store"
     >
       <Routes>
 
@@ -51,27 +51,6 @@ function App() {
         <Route path="/vendors" element={<Vendors />} />
         <Route path="/vendors/overview" element={<VendorOverview />} />
         <Route path="/vendors/statistics" element={<VendorsStatistics />} />
-        {/* <Route path="/products" element={<Products />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route
-          path="/analytics"
-          element={
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-              <p className="text-gray-600">Analytics page coming soon...</p>
-            </div>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-              <p className="text-gray-600">Settings page coming soon...</p>
-            </div>
-          }
-        /> */}
       </Routes>
     </DashboardLayout>
   );

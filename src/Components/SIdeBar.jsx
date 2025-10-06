@@ -22,7 +22,7 @@ export function Sidebar({ items, activePath, brandName = 'Dashboard' }) {
             >
                 <div className="p-6 border-b border-gray-200">
                     <h1 className="text-2xl font-bold text-gray-900">{brandName}</h1>
-                    <p className="text-sm text-gray-500 mt-1">Ecommerce Admin</p>
+                    <p className="text-sm text-gray-500 mt-1">Maghani Admin</p>
                 </div>
 
                 <nav className="flex-1 overflow-y-auto p-4">
@@ -56,8 +56,10 @@ export function Sidebar({ items, activePath, brandName = 'Dashboard' }) {
                             A
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                            <p className="text-xs text-gray-500 truncate">admin@store.com</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                                Admin User
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">admin@maghani.com</p>
                         </div>
                     </div>
                 </div>
