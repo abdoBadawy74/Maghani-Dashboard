@@ -15,6 +15,8 @@ import VendorOverview from './pages/Vendors/VendorOverview';
 import VendorsStatistics from './pages/VendorsStatistics';
 import RequireBack from './pages/Auth/RequireBack';
 import RequireAuth from './pages/Auth/RequireAuth';
+import UsersPage from './pages/Users/Users';
+
 
 function App() {
   const location = useLocation();
@@ -28,6 +30,7 @@ function App() {
     { label: 'Settings', icon: Settings, path: '/settings' },
     { label: 'Vendors', icon: Store, path: '/vendors' },
     { label: 'Statistics', icon: ChartBar, path: '/vendors/statistics' },
+    { label: "Users", icon: Users, path: "/users" },
 
     // { label: 'Products', icon: Package, path: '/products' },
     // { label: 'Customers', icon: Users, path: '/customers' },
@@ -55,6 +58,7 @@ function App() {
                 <Route path="/vendors" element={<Vendors />} />
                 <Route path="/vendors/overview" element={<VendorOverview />} />
                 <Route path="/vendors/statistics" element={<VendorsStatistics />} />
+                <Route path="/users" element={<UsersPage />} />
               </Routes>
             </DashboardLayout>
           </RequireAuth>
