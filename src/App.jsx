@@ -16,6 +16,7 @@ import VendorsStatistics from './pages/VendorsStatistics';
 import RequireBack from './pages/Auth/RequireBack';
 import RequireAuth from './pages/Auth/RequireAuth';
 import UsersPage from './pages/Users/Users';
+import GrowthTrend from './pages/Users/GrowthTrend';
 
 
 function App() {
@@ -29,8 +30,11 @@ function App() {
     { label: 'Categories', icon: ChartColumnStacked, path: '/categories' },
     { label: 'Settings', icon: Settings, path: '/settings' },
     { label: 'Vendors', icon: Store, path: '/vendors' },
-    { label: 'Statistics', icon: ChartBar, path: '/vendors/statistics' },
+    { label: 'Vendors Statistics', icon: ChartBar, path: '/vendors/statistics' },
     { label: "Users", icon: Users, path: "/users" },
+    { label: "UsersStatistics", icon: ChartBar, path: "/users/statistics" },
+
+    
 
     // { label: 'Products', icon: Package, path: '/products' },
     // { label: 'Customers', icon: Users, path: '/customers' },
@@ -59,6 +63,7 @@ function App() {
                 <Route path="/vendors/overview" element={<VendorOverview />} />
                 <Route path="/vendors/statistics" element={<VendorsStatistics />} />
                 <Route path="/users" element={<UsersPage />} />
+                <Route path="/users/growth-trend" element={<GrowthTrend />} />
               </Routes>
             </DashboardLayout>
           </RequireAuth>

@@ -3,6 +3,7 @@ import axios from "axios";
 import { PulseLoader } from "react-spinners";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
 
 export default function UsersPage() {
     const [users, setUsers] = useState([]);
@@ -87,6 +88,7 @@ export default function UsersPage() {
             <ToastContainer position="top-right" autoClose={2000} />
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Users Management</h2>
 
+
             {/* Search & Limit */}
             <form onSubmit={handleSearch} className="mb-6 flex flex-wrap items-center gap-3">
                 <input
@@ -118,7 +120,12 @@ export default function UsersPage() {
                         className="border border-gray-300 rounded-lg px-3 py-2 w-20"
                     />
                 </div>
+
+                <Link to="/users/growth-trend" className="ml-auto bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700">
+                    View Growth Trend
+                </Link>
             </form>
+
 
             {/* Table */}
             {loading ? (
