@@ -5,6 +5,7 @@ import RevenueTimeline from "./RevenueTimeline";
 import { PulseLoader } from "react-spinners";
 import TopPerformers from "./TopPerformers";
 import RevenueTab from "./RevenueTab";
+import OrdersTab from "./OrdersTab";
 
 /*
   Simple Tabs layout.
@@ -67,6 +68,12 @@ export default function Dashboard() {
                 {activeTab === "revenue" && (
                     <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
                         <RevenueTab />
+                    </Suspense>
+                )}
+
+                {activeTab === "orders" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <OrdersTab />
                     </Suspense>
                 )}
 
