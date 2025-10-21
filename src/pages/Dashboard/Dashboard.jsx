@@ -129,7 +129,7 @@ export default function Dashboard() {
 
 
                 {/* Placeholder for other tabs: lazy-load them later */}
-                {activeTab !== "overview" && (
+                {activeTab == "coupons" && (
                     <div className="bg-white rounded-lg shadow p-8 text-gray-600">
                         <p className="font-medium">Section "{activeTab}" not implemented yet.</p>
                         <p className="text-sm text-gray-500 mt-2">
