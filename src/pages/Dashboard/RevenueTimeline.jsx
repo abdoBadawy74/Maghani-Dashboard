@@ -8,7 +8,7 @@ const RevenueTimeline = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
-        startDate: "2025-10-01",
+        startDate: "2025-09-01",
         endDate: "2025-10-21",
         groupBy: "month",
     });
