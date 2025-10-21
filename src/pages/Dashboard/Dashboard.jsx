@@ -6,7 +6,7 @@ import { PulseLoader } from "react-spinners";
 import TopPerformers from "./TopPerformers";
 import RevenueTab from "./RevenueTab";
 import OrdersTab from "./OrdersTab";
-
+import UsersTab from "./UsersTab";
 /*
   Simple Tabs layout.
   We'll lazy-load other sections later (they can be separate components).
@@ -18,7 +18,7 @@ export default function Dashboard() {
         { key: "overview", label: "Overview" },        // ✅ overview/quick + recent-activity + revenue/timeline
         { key: "revenue", label: "Revenue" },          // ✅ revenue/breakdown + revenue/timeline
         { key: "orders", label: "Orders" },            // ✅ orders/status-breakdown
-        { key: "users", label: "Users" },              // ✅ users/statistics + user/growth-trend
+        { key: "users", label: "Users" },              // ✅ users/statistics 
         { key: "vendors", label: "Vendors" },          // ✅ vendors/performance
         { key: "products", label: "Products" },        // ✅ products/performance
         { key: "coupons", label: "Coupons" },          // ✅ coupons/usage
@@ -74,6 +74,12 @@ export default function Dashboard() {
                 {activeTab === "orders" && (
                     <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
                         <OrdersTab />
+                    </Suspense>
+                )}
+
+                {activeTab === "users" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <UsersTab />
                     </Suspense>
                 )}
 
