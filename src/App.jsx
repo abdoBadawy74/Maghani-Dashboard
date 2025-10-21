@@ -1,7 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Home, Package, ShoppingCart, Users, Settings, BarChart3, Puzzle, ChartColumnStacked, Store, ChartBar, } from 'lucide-react';
 import { DashboardLayout } from './Components/DashboardLayout';
-import { Dashboard } from './pages/Dashboard';
+import  Dashboard  from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
 import Banners from './pages/Banners/Banners';
 // import RequireAuth from "./pages/Auth/RequireAuth"
