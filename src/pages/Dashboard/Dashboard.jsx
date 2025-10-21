@@ -9,6 +9,9 @@ import OrdersTab from "./OrdersTab";
 import UsersTab from "./UsersTab";
 import VendorsPerformanceTab from "./VendorsPerformanceTab";
 import ProductsPerformance from "./ProductsPerformance ";
+import ShippingTab from "./ShippingTab";
+import TrendsAndGeographicTab from "./TrendsAndGeographicTab";
+
 /*
   Simple Tabs layout.
   We'll lazy-load other sections later (they can be separate components).
@@ -96,6 +99,19 @@ export default function Dashboard() {
                         <ProductsPerformance />
                     </Suspense>
                 )}
+
+                {activeTab === "shipping" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <ShippingTab />
+                    </Suspense>
+                )}
+
+                {activeTab === "trends" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <TrendsAndGeographicTab />
+                    </Suspense>
+                )}
+
 
                 {/* Placeholder for other tabs: lazy-load them later */}
                 {activeTab !== "overview" && (
