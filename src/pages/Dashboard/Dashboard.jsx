@@ -12,6 +12,7 @@ import ProductsPerformance from "./ProductsPerformance ";
 import ShippingTab from "./ShippingTab";
 import TrendsAndGeographicTab from "./TrendsAndGeographicTab";
 import SuperAdminDashboard from "./SuperAdminDashboard";
+import ExportSummaryPage from "./ExportSummaryPage";
 
 /*
   Simple Tabs layout.
@@ -30,7 +31,8 @@ export default function Dashboard() {
         { key: "coupons", label: "Coupons" },          // ✅ coupons/usage
         { key: "shipping", label: "Shipping" },        // ✅ shipping/stats
         { key: "trends", label: "Trends" },            // ✅ trends + geographic/stats
-        { key: "system", label: "System" },            // ✅ super-admin + addons/stats + export/summary + payments/analytics + customer/lifetime-value
+        { key: "SuperAdmin", label: "SuperAdmin" },    // ✅ super-admin 
+        { key: "analytics", label: "Analytics" },      // ✅ addons/stats + export/summary + payments/analytics + customer/lifetime-value
         { key: "top", label: "Top Performers" }        // ✅ top-performers
     ];
 
@@ -113,15 +115,21 @@ export default function Dashboard() {
                     </Suspense>
                 )}
 
-                {activeTab === "system" && (
+                {activeTab === "SuperAdmin" && (
                     <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
                         <SuperAdminDashboard />
                     </Suspense>
                 )}
 
+                {activeTab === "analytics" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <ExportSummaryPage />
+                    </Suspense>
+                )}
+
 
                 {/* Placeholder for other tabs: lazy-load them later */}
-                {activeTab !== "overview" && (
+                {activeTab == "coupons" && (
                     <div className="bg-white rounded-lg shadow p-8 text-gray-600">
                         <p className="font-medium">Section "{activeTab}" not implemented yet.</p>
                         <p className="text-sm text-gray-500 mt-2">
