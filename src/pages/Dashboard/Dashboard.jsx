@@ -7,6 +7,7 @@ import TopPerformers from "./TopPerformers";
 import RevenueTab from "./RevenueTab";
 import OrdersTab from "./OrdersTab";
 import UsersTab from "./UsersTab";
+import VendorsPerformanceTab from "./VendorsPerformanceTab";
 /*
   Simple Tabs layout.
   We'll lazy-load other sections later (they can be separate components).
@@ -80,6 +81,12 @@ export default function Dashboard() {
                 {activeTab === "users" && (
                     <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
                         <UsersTab />
+                    </Suspense>
+                )}
+
+                {activeTab === "vendors" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <VendorsPerformanceTab />
                     </Suspense>
                 )}
 

@@ -15,8 +15,8 @@ import {
 export default function UsersTab() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [startDate, setStartDate] = useState("2025-09-01");
-    const [endDate, setEndDate] = useState("2025-10-21");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
     const fetchData = async () => {
         try {
