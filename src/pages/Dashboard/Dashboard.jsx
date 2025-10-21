@@ -11,6 +11,7 @@ import VendorsPerformanceTab from "./VendorsPerformanceTab";
 import ProductsPerformance from "./ProductsPerformance ";
 import ShippingTab from "./ShippingTab";
 import TrendsAndGeographicTab from "./TrendsAndGeographicTab";
+import SuperAdminDashboard from "./SuperAdminDashboard";
 
 /*
   Simple Tabs layout.
@@ -109,6 +110,12 @@ export default function Dashboard() {
                 {activeTab === "trends" && (
                     <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
                         <TrendsAndGeographicTab />
+                    </Suspense>
+                )}
+
+                {activeTab === "system" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <SuperAdminDashboard />
                     </Suspense>
                 )}
 
