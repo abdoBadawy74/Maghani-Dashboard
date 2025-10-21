@@ -4,6 +4,7 @@ import RecentActivity from "./RecentActivity";
 import RevenueTimeline from "./RevenueTimeline";
 import { PulseLoader } from "react-spinners";
 import TopPerformers from "./TopPerformers";
+import RevenueTab from "./RevenueTab";
 
 /*
   Simple Tabs layout.
@@ -12,19 +13,19 @@ import TopPerformers from "./TopPerformers";
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("overview");
 
-  const tabs = [
-  { key: "overview", label: "Overview" },        // ✅ overview/quick + recent-activity + revenue/timeline
-  { key: "revenue", label: "Revenue" },          // ✅ revenue/breakdown + revenue/timeline
-  { key: "orders", label: "Orders" },            // ✅ orders/status-breakdown
-  { key: "users", label: "Users" },              // ✅ users/statistics + user/growth-trend
-  { key: "vendors", label: "Vendors" },          // ✅ vendors/performance
-  { key: "products", label: "Products" },        // ✅ products/performance
-  { key: "coupons", label: "Coupons" },          // ✅ coupons/usage
-  { key: "shipping", label: "Shipping" },        // ✅ shipping/stats
-  { key: "trends", label: "Trends" },            // ✅ trends + geographic/stats
-  { key: "system", label: "System" },            // ✅ super-admin + addons/stats + export/summary + payments/analytics + customer/lifetime-value
-  { key: "top", label: "Top Performers" }        // ✅ top-performers
-];
+    const tabs = [
+        { key: "overview", label: "Overview" },        // ✅ overview/quick + recent-activity + revenue/timeline
+        { key: "revenue", label: "Revenue" },          // ✅ revenue/breakdown + revenue/timeline
+        { key: "orders", label: "Orders" },            // ✅ orders/status-breakdown
+        { key: "users", label: "Users" },              // ✅ users/statistics + user/growth-trend
+        { key: "vendors", label: "Vendors" },          // ✅ vendors/performance
+        { key: "products", label: "Products" },        // ✅ products/performance
+        { key: "coupons", label: "Coupons" },          // ✅ coupons/usage
+        { key: "shipping", label: "Shipping" },        // ✅ shipping/stats
+        { key: "trends", label: "Trends" },            // ✅ trends + geographic/stats
+        { key: "system", label: "System" },            // ✅ super-admin + addons/stats + export/summary + payments/analytics + customer/lifetime-value
+        { key: "top", label: "Top Performers" }        // ✅ top-performers
+    ];
 
 
     return (
@@ -63,6 +64,11 @@ export default function Dashboard() {
                     </Suspense>
                 )}
 
+                {activeTab === "revenue" && (
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <RevenueTab />
+                    </Suspense>
+                )}
 
                 {/* Placeholder for other tabs: lazy-load them later */}
                 {activeTab !== "overview" && (
