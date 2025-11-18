@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Home, Package, ShoppingCart, Users, Settings, BarChart3, Puzzle, ChartColumnStacked, Store, ChartBar, } from 'lucide-react';
+import { Home, Package, ShoppingCart, Users, Settings, LandPlot, Puzzle, ChartColumnStacked, Store, ChartBar, } from 'lucide-react';
 import { DashboardLayout } from './Components/DashboardLayout';
 import  Dashboard  from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
@@ -18,6 +18,7 @@ import RequireAuth from './pages/Auth/RequireAuth';
 import UsersPage from './pages/Users/Users';
 import GrowthTrend from './pages/Users/GrowthTrend';
 import UsersStatistics from './pages/Users/UsersStatistics';
+import Zones from './pages/Zones/Zones';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
   const sidebarItems = [
     { label: 'Dashboard', icon: Home, path: '/' },
     { label: 'Banners', icon: FaInfoCircle, path: '/banners' },
+    { label: 'Zones', icon: LandPlot, path: '/zones' },
     { label: 'Coupons', icon: Puzzle, path: '/coupons' },
     { label: 'Orders', icon: ShoppingCart, path: '/orders' },
     { label: 'Categories', icon: ChartColumnStacked, path: '/categories' },
@@ -55,7 +57,7 @@ function App() {
             <DashboardLayout sidebarItems={sidebarItems} activePath={location.pathname} brandName="Maghani Store">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/banners" element={<Banners />} />
+                <Route path="/zones" element={<Zones />} />
                 <Route path="/coupons" element={<Coupons />} />
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/categories" element={<Categories />} />
