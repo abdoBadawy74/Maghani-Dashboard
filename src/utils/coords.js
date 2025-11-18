@@ -1,29 +1,42 @@
-// normalize polygon coords into an array of [lat,lng] pairs
+// /utils/coords.js - النسخة النهائية المصححة
 export function extractLatLngsFromPolygon(polygon) {
-  if (!polygon || !Array.isArray(polygon.coordinates)) return [];
-
-  // try to find the innermost array of [lng, lat] pairs
-  let arr = polygon.coordinates;
-
-  // flatten until we reach pairs of numbers
-  while (Array.isArray(arr) && arr.length && Array.isArray(arr[0])) {
-    arr = arr[0];
-    // break if the elements look like numbers
-    if (arr.length && typeof arr[0] === "number") break;
+  if (!polygon || !polygon.coordinates) {
+    console.warn("Polygon object or coordinates array is missing.");
+    return [];
   }
 
-  // at this point arr should be something like [[lng,lat], [lng,lat], ...]
-  const pairs = Array.isArray(arr) && typeof arr[0] === "number" ? arr : arr;
+  let coords = polygon.coordinates;
+  
+  // التسطيح المتكرر: استمر بالتسطيح طالما أن العنصر الحالي هو مصفوفة،
+  // وعنصرها الأول مصفوفة أيضاً.
+  // نتوقف عندما يكون العنصر الأول زوجًا من الأرقام [number, number].
+  while (
+    Array.isArray(coords) &&
+    coords.length > 0 &&
+    Array.isArray(coords[0]) &&
+    // الشرط الحاسم: إذا كان العنصر الأول من المصفوفة ليس زوج إحداثيات (أي ليس [number, number])، نستمر في التسطيح.
+    (coords[0].length !== 2 || typeof coords[0][0] !== 'number')
+  ) {
+    coords = coords[0];
+  }
+  
+  // الآن، يجب أن تكون 'coords' هي مصفوفة من أزواج الإحداثيات: [[lng, lat], [lng, lat], ...]
+  
+  if (!Array.isArray(coords) || coords.length === 0 || coords[0].length !== 2) {
+      // إذا فشل الاستخراج، نرجع مصفوفة فارغة
+      console.error("Failed to extract coordinate pairs after flattening.", coords);
+      return [];
+  }
 
-  // ensure we map to [lat, lng]
-  return pairs.map((p) => {
-    // defensive: if point nested one level deeper
-    const point = Array.isArray(p) && typeof p[0] === "number" && typeof p[1] === "number"
-      ? p
-      : (Array.isArray(p) && Array.isArray(p[0]) ? p[0] : null);
+  // 1. استخدام 'coords' كمصفوفة أزواج
+  const pairs = coords;
 
-    if (!point) return null;
-    const [lng, lat] = point;
-    return [lat, lng];
+  // 2. العكس (Reversing) من [Long, Lat] إلى [Lat, Long]
+  return pairs.map(p => {
+    const [lng, lat] = p; // GeoJSON is Longitude, Latitude
+    if (typeof lng === 'number' && typeof lat === 'number') {
+      return [lat, lng]; // Leaflet requires Latitude, Longitude
+    }
+    return null;
   }).filter(Boolean);
 }
