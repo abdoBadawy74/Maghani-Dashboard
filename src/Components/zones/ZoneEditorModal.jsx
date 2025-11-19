@@ -5,48 +5,36 @@ import { EditControl } from "react-leaflet-draw";
 import L from "leaflet";
 import { extractLatLngsFromPolygon } from "../../utils/coords";
 
-// 🌟 تحويل إحداثيات Leaflet إلى الشكل المطلوب للسيرفر (4 مستويات)
-/**
- * تحويل إحداثيات Leaflet لأي nested array إلى الشكل المطلوب من السيرفر
- */
-export const toGeoJsonPolygonCoords = (leafletLatLngs) => {
-  if (!leafletLatLngs || !Array.isArray(leafletLatLngs)) return [];
+const toGeoJsonPolygonCoords = (latlngs) => {
+  if (!latlngs || !Array.isArray(latlngs)) return [];
 
-  // flatten كل المستويات لزوجات [lat, lng]
-  const flattenLatLngs = (arr) => {
-    if (Array.isArray(arr[0]) && typeof arr[0][0] === "number") {
-      return arr; // وصلنا لزوج [lat, lng]
-    }
-    return flattenLatLngs(arr[0]);
+  // flatten للوصول لزوج lat,lng
+  const flatten = (arr) => {
+    if (Array.isArray(arr[0]) && typeof arr[0][0] === "number") return arr;
+    return flatten(arr[0]);
   };
 
-  const latlngs = flattenLatLngs(leafletLatLngs);
+  const clean = flatten(latlngs);
 
-  if (latlngs.length < 3) return [];
+  const ring = clean.map(([lat, lng]) => [lng, lat]);
 
-  // تحويل لـ [lng, lat]
-  const ring = latlngs.map(([lat, lng]) => [lng, lat]);
-
-  // تأكد من إغلاق الحلقة
+  // تأكيد إغلاق الشكل
   const first = ring[0];
   const last = ring[ring.length - 1];
-  if (first[0] !== last[0] || first[1] !== last[1]) {
-    ring.push(first);
-  }
+  if (first[0] !== last[0] || first[1] !== last[1]) ring.push(first);
 
-  // غلاف 4 مستويات array كما السيرفر يريد
-  return [[[[...ring]]]];
+  return [ring];
 };
-
 
 export default function ZoneEditorModal({ visible, onClose, onSubmit, initialZone }) {
   const [form] = Form.useForm();
   const [polygonLatLngs, setPolygonLatLngs] = useState([]);
   const featureGroupRef = useRef(null);
   const mapRef = useRef(null);
+
   const defaultCenter = [30.033333, 31.233334];
 
-  // 🌟 تهيئة المودال والخريطة
+  // 🟦 useEffect الأول: تحميل البيانات فقط — دون رسم على الخريطة
   useEffect(() => {
     const featureGroup = featureGroupRef.current;
     let pts = [];
@@ -62,13 +50,6 @@ export default function ZoneEditorModal({ visible, onClose, onSubmit, initialZon
 
       pts = extractLatLngsFromPolygon(initialZone.polygon);
       setPolygonLatLngs(pts);
-
-      if (pts.length >= 3 && featureGroup) {
-        const polygonLayer = L.polygon(pts);
-        const fg = featureGroup.leafletElement || featureGroup;
-        fg.addLayer(polygonLayer);
-        if (polygonLayer.editing) polygonLayer.editing.enable();
-      }
     } else {
       form.resetFields();
       setPolygonLatLngs([]);
@@ -88,33 +69,47 @@ export default function ZoneEditorModal({ visible, onClose, onSubmit, initialZon
     }
   }, [initialZone, visible]);
 
-  const center =
-    polygonLatLngs.length
-      ? polygonLatLngs[Math.floor(polygonLatLngs.length / 2)]
-      : defaultCenter;
+  // 🟦 useEffect الثاني: رسم البوليغون فعليًا بعد ظهور المودال
+  useEffect(() => {
+    if (!visible) return;
 
-  // 🌟 إدارة إنشاء البوليغون على الخريطة
+    setTimeout(() => {
+      const map = mapRef.current;
+      const fg = featureGroupRef.current;
+
+      if (map) map.invalidateSize();
+
+      if (fg) {
+        fg.clearLayers();
+
+        if (polygonLatLngs.length >= 3) {
+          const layer = L.polygon(polygonLatLngs);
+          fg.addLayer(layer);
+          if (layer.editing) layer.editing.enable();
+        }
+      }
+    }, 250);
+  }, [visible, polygonLatLngs]);
+
   const handleCreated = (e) => {
     const layer = e.layer;
-    const latlngs = layer.getLatLngs()[0].map((p) => [p.lat, p.lng]);
+    const latlngs = layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+
     setPolygonLatLngs(latlngs);
 
     featureGroupRef.current.clearLayers();
     featureGroupRef.current.addLayer(layer);
   };
 
-  // 🌟 تعديل البوليغون
   const handleEdited = (e) => {
-    e.layers.eachLayer((layer) => {
-      const latlngs = layer.getLatLngs()[0].map((p) => [p.lat, p.lng]);
+    e.layers.eachLayer(layer => {
+      const latlngs = layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
       setPolygonLatLngs(latlngs);
     });
   };
 
-  // 🌟 حذف البوليغون
   const handleDeleted = () => setPolygonLatLngs([]);
 
-  // 🌟 إرسال البيانات للسيرفر
   const submit = async () => {
     try {
       const values = await form.validateFields();
@@ -125,34 +120,26 @@ export default function ZoneEditorModal({ visible, onClose, onSubmit, initialZon
       }
 
       const body = {
-        "name": values.name,
-        "polygon": {
-          "type": "Polygon",
-          "coordinates": [
-            [
-              toGeoJsonPolygonCoords(polygonLatLngs)[0][0][0]
-
-            ]
-          ]
+        name: values.name,
+        polygon: {
+          type: "Polygon",
+          coordinates: [toGeoJsonPolygonCoords(polygonLatLngs)[0]]
         },
-        "isActive": true,
-        // "shippingCost": parseInt(values.shippingCost) || 0
-
-      }
+        isActive: values.isActive,
+        shippingCost: values.shippingCost || "0.00"
+      };
 
       await onSubmit(body);
     } catch (err) { }
   };
 
+  const center =
+    polygonLatLngs.length
+      ? polygonLatLngs[Math.floor(polygonLatLngs.length / 2)]
+      : defaultCenter;
 
   return (
-    <Modal
-      open={visible}
-      onCancel={onClose}
-      title={initialZone ? "Edit Zone" : "Add Zone"}
-      footer={null}
-      width={1000}
-    >
+    <Modal open={visible} onCancel={onClose} title={initialZone ? "Edit Zone" : "Add Zone"} footer={null} width={1000}>
       <Form layout="vertical" form={form}>
         <Form.Item name="name" label="Name" rules={[{ required: true }]}>
           <Input />
@@ -187,7 +174,6 @@ export default function ZoneEditorModal({ visible, onClose, onSubmit, initialZon
                   circle: false,
                   marker: false,
                   circlemarker: false,
-                  polygon: { allowIntersection: false, showArea: true },
                 }}
               />
             </FeatureGroup>
