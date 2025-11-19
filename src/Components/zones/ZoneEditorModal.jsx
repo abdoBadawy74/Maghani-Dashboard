@@ -149,9 +149,7 @@ export default function ZoneEditorModal({ visible, onClose, onSubmit, initialZon
           <Switch />
         </Form.Item>
 
-        <Form.Item name="shippingCost" label="Shipping Cost" rules={[{ required: true }]}>
-          <Input type="number" step="0.01" />
-        </Form.Item>
+     
 
         <div style={{ height: 450, marginBottom: 12 }}>
           <MapContainer
