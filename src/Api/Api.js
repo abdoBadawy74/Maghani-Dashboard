@@ -1,14 +1,12 @@
 import axios from "axios";
 
-const BASE = "https://api.maghni.acwad.tech/api/v1"
+const BASE = "https://api.maghni.acwad.tech/api/v1";
 
 //login
-export const LOGIN = `${BASE}/auth/login`
-
+export const LOGIN = `${BASE}/auth/login`;
 
 //Bannars
-export const BANNERS =`${BASE}/banners`
-
+export const BANNERS = `${BASE}/banners`;
 
 // zones
 
@@ -16,6 +14,7 @@ const API = axios.create({
   baseURL: "https://api.maghni.acwad.tech/api/v1",
   headers: {
     "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
   },
 });
 

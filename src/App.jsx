@@ -57,6 +57,7 @@ function App() {
             <DashboardLayout sidebarItems={sidebarItems} activePath={location.pathname} brandName="Maghani Store">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/banners" element={<Banners />} />
                 <Route path="/zones" element={<Zones />} />
                 <Route path="/coupons" element={<Coupons />} />
                 <Route path="/orders" element={<Orders />} />
