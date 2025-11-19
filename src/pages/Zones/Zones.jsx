@@ -106,7 +106,7 @@ const PageHeader = ({ title, extra }) => (
   return (
     <div style={{ padding: 20 }}>
     <PageHeader
-  title="Zones Dashboard"
+  title="Zones Management"
   extra={[
     <Button key="1" type="primary" onClick={handleAddClick}>
       Add Zone
