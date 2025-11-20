@@ -15,11 +15,32 @@ export default function SettingsPage() {
 
   // 📌 Help Center State
   const [helpCenter, setHelpCenter] = useState([]);
-  const [newHelp, setNewHelp] = useState({ question: "", answer: "" });
+  const [newHelp, setNewHelp] = useState({
+    question_en: "",
+    question_ar: "",
+    answer_en: "",
+    answer_ar: ""
+  });
+
 
   // 📌 Policies State
   const [policies, setPolicies] = useState([]);
-  const [newPolicy, setNewPolicy] = useState({ title: "", content: "" });
+  const [newPolicy, setNewPolicy] = useState({
+    title_en: "",
+    title_ar: "",
+    content_en: "",
+    content_ar: ""
+  });
+
+
+  // Edit Help
+  const [showEditHelpPopup, setShowEditHelpPopup] = useState(false);
+  const [currentHelp, setCurrentHelp] = useState(null);
+
+  // Edit Policy
+  const [showEditPolicyPopup, setShowEditPolicyPopup] = useState(false);
+  const [currentPolicy, setCurrentPolicy] = useState(null);
+
 
   // ------------------ Fetch Data ------------------
   const fetchContact = async () => {
@@ -102,10 +123,22 @@ export default function SettingsPage() {
 
   // ------------------ Help Center ------------------
   const addHelp = async () => {
-    if (!newHelp.question || !newHelp.answer) {
-      toast.error("❌ Please fill in all fields");
+    if (!newHelp.question_en || !newHelp.question_ar || !newHelp.answer_en || !newHelp.answer_ar) {
+      toast.error("⚠️ Please fill all fields");
       return;
     }
+
+    const body = {
+      question: {
+        en: newHelp.question_en,
+        ar: newHelp.question_ar
+      },
+      answer: {
+        en: newHelp.answer_en,
+        ar: newHelp.answer_ar
+      }
+    };
+
     try {
       const res = await fetch("https://api.maghni.acwad.tech/api/v1/setting/help-center", {
         method: "POST",
@@ -113,20 +146,22 @@ export default function SettingsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newHelp),
+        body: JSON.stringify(body),
       });
+
       const data = await res.json();
       if (res.ok && data.success) {
-        toast.success("✅ Added successfully");
-        setNewHelp({ question: "", answer: "" });
+        toast.success("🟢 Added Successfully");
+        setNewHelp({ question_en: "", question_ar: "", answer_en: "", answer_ar: "" });
         fetchHelpCenter();
       } else {
-        toast.error(data.message || "Add failed");
+        toast.error(data.message || "Failed");
       }
     } catch {
       toast.error("❌ Error adding help item");
     }
   };
+
 
   const deleteHelp = async (id) => {
     try {
@@ -146,33 +181,76 @@ export default function SettingsPage() {
     }
   };
 
-  // ------------------ Policies ------------------
-  const addPolicy = async () => {
-    if (!newPolicy.title || !newPolicy.content) {
-      toast.error("❌ Please fill in all fields");
-      return;
-    }
-    try {
-      const res = await fetch("https://api.maghni.acwad.tech/api/v1/setting/policies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newPolicy),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success("✅ Policy added");
-        setNewPolicy({ title: "", content: "" });
-        fetchPolicies();
-      } else {
-        toast.error(data.message || "Add failed");
+  const editHelp = (item) => {
+    setCurrentHelp({
+      id: item.id,
+      question_en: item.question.en,
+      question_ar: item.question.ar,
+      answer_en: item.answer.en,
+      answer_ar: item.answer.ar
+    });
+    setShowEditHelpPopup(true);
+  };
+
+  const updateHelp = async () => {
+    const body = {
+      question: {
+        en: currentHelp.question_en,
+        ar: currentHelp.question_ar
+      },
+      answer: {
+        en: currentHelp.answer_en,
+        ar: currentHelp.answer_ar
       }
-    } catch {
-      toast.error("❌ Error adding policy");
+    };
+
+    const res = await fetch(`https://api.maghni.acwad.tech/api/v1/setting/help-center/${currentHelp.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      toast.success("Updated Successfully");
+      setShowEditHelpPopup(false);
+      fetchHelpCenter();
+    } else {
+      toast.error(data.message || "Update Failed");
     }
   };
+
+
+
+  // ------------------ Policies ------------------
+  const addPolicy = async () => {
+    if (!newPolicy.title_en || !newPolicy.title_ar || !newPolicy.content_en || !newPolicy.content_ar) {
+      toast.error("⚠️ Please fill all fields");
+      return;
+    }
+    const body = {
+      title: { en: newPolicy.title_en, ar: newPolicy.title_ar },
+      content: { en: newPolicy.content_en, ar: newPolicy.content_ar }
+    };
+
+    const res = await fetch("https://api.maghni.acwad.tech/api/v1/setting/policies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      toast.success("Policy Added");
+      setNewPolicy({ title_en: "", title_ar: "", content_en: "", content_ar: "" });
+      fetchPolicies();
+    }
+  };
+
 
   const deletePolicy = async (id) => {
     try {
@@ -191,6 +269,50 @@ export default function SettingsPage() {
       toast.error("❌ Error deleting policy");
     }
   };
+
+  const editPolicy = (item) => {
+    setCurrentPolicy({
+      id: item.id,
+      title_en: item.title.en,
+      title_ar: item.title.ar,
+      content_en: item.content.en,
+      content_ar: item.content.ar
+    });
+    setShowEditPolicyPopup(true);
+  };
+
+  const updatePolicy = async () => {
+    const body = {
+      title: {
+        en: currentPolicy.title_en,
+        ar: currentPolicy.title_ar
+      },
+      content: {
+        en: currentPolicy.content_en,
+        ar: currentPolicy.content_ar
+      }
+    };
+
+    const res = await fetch(`https://api.maghni.acwad.tech/api/v1/setting/policies/${currentPolicy.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      toast.success("Policy Updated");
+      setShowEditPolicyPopup(false);
+      fetchPolicies();
+    } else {
+      toast.error(data.message || "Update Failed");
+    }
+  };
+
 
   // ------------------ UI ------------------
   return (
@@ -220,51 +342,6 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      {/* ------------------ Contact Us ------------------ */}
-      {/* {activeTab === "contact" && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-4">📩 Contact Info</h2>
-          <p className="mb-4 text-gray-600">Update the contact information displayed to users.</p>
-          <div className="grid gap-4">
-            <div className="flex flex-col">
-              <label className="font-medium">Email:</label>
-              <input
-                type="email"
-                placeholder="Email"
-                value={contact.email}
-                onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-medium">Phone:</label>
-              <input
-                type="text"
-                placeholder="Phone"
-                value={contact.phone}
-                onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-medium">Whatsapp:</label>
-              <input
-                type="text"
-                placeholder="Whatsapp"
-                value={contact.whatsapp}
-                onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-            </div>
-          </div>
-          <button
-            onClick={updateContact}
-            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Save
-          </button>
-        </div>
-      )} */}
 
       {/* ------------------ Contact Us ------------------ */}
       {activeTab === "contact" && (
@@ -291,7 +368,7 @@ export default function SettingsPage() {
                 <button
                   className="px-3 py-1 bg-red-500 text-white rounded"
                   onClick={() => {
-                    deleteContact(item.id);
+                    deleteContact(item.value);
                   }}
                 >
                   Delete
@@ -377,23 +454,39 @@ export default function SettingsPage() {
           <div className="grid gap-4 mb-4">
             <input
               type="text"
-              placeholder="Question"
-              required
-              value={newHelp.question}
-              onChange={(e) => setNewHelp({ ...newHelp, question: e.target.value })}
+              placeholder="Question (English)"
+              value={newHelp.question_en}
+              onChange={(e) => setNewHelp({ ...newHelp, question_en: e.target.value })}
               className="border px-3 py-2 rounded"
             />
+
+            <input
+              type="text"
+              placeholder="Question (Arabic)"
+              value={newHelp.question_ar}
+              onChange={(e) => setNewHelp({ ...newHelp, question_ar: e.target.value })}
+              className="border px-3 py-2 rounded"
+            />
+
             <textarea
-              placeholder="Answer"
-              required
-              value={newHelp.answer}
-              onChange={(e) => setNewHelp({ ...newHelp, answer: e.target.value })}
+              placeholder="Answer (English)"
+              value={newHelp.answer_en}
+              onChange={(e) => setNewHelp({ ...newHelp, answer_en: e.target.value })}
               className="border px-3 py-2 rounded"
             />
+
+            <textarea
+              placeholder="Answer (Arabic)"
+              value={newHelp.answer_ar}
+              onChange={(e) => setNewHelp({ ...newHelp, answer_ar: e.target.value })}
+              className="border px-3 py-2 rounded"
+            />
+
             <button onClick={addHelp} className="bg-green-600 text-white px-4 py-2 rounded-lg">
               Add
             </button>
           </div>
+
 
           <table className="w-full border">
             <thead>
@@ -408,14 +501,26 @@ export default function SettingsPage() {
               {helpCenter.map((h) => (
                 <tr key={h.id}>
                   <td className="p-2 border">{h.id}</td>
-                  <td className="p-2 border">{h.question}</td>
-                  <td className="p-2 border">{h.answer}</td>
                   <td className="p-2 border">
+                    <div><b>EN:</b> {h.question.en}</div>
+                    <div><b>AR:</b> {h.question.ar}</div>
+                  </td>
+                  <td className="p-2 border">
+                    <div><b>EN:</b> {h.answer.en}</div>
+                    <div><b>AR:</b> {h.answer.ar}</div>
+                  </td>
+                  <td className="p-2 border flex gap-2">
                     <button
                       onClick={() => deleteHelp(h.id)}
                       className="bg-red-500 text-white px-2 py-1 rounded"
                     >
                       Delete
+                    </button>
+                    <button
+                      onClick={() => editHelp(h)}
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                    >
+                      Edit
                     </button>
                   </td>
                 </tr>
@@ -432,15 +537,28 @@ export default function SettingsPage() {
           <div className="grid gap-4 mb-4">
             <input
               type="text"
-              placeholder="Title"
-              value={newPolicy.title}
-              onChange={(e) => setNewPolicy({ ...newPolicy, title: e.target.value })}
+              placeholder="Title (English)"
+              value={newPolicy.title_en}
+              onChange={(e) => setNewPolicy({ ...newPolicy, title_en: e.target.value })}
+              className="border px-3 py-2 rounded"
+            />
+            <input
+              type="text"
+              placeholder="Title (Arabic)"
+              value={newPolicy.title_ar}
+              onChange={(e) => setNewPolicy({ ...newPolicy, title_ar: e.target.value })}
               className="border px-3 py-2 rounded"
             />
             <textarea
-              placeholder="Content"
-              value={newPolicy.content}
-              onChange={(e) => setNewPolicy({ ...newPolicy, content: e.target.value })}
+              placeholder="Content (English)"
+              value={newPolicy.content_en}
+              onChange={(e) => setNewPolicy({ ...newPolicy, content_en: e.target.value })}
+              className="border px-3 py-2 rounded"
+            />
+            <textarea
+              placeholder="Content (Arabic)"
+              value={newPolicy.content_ar}
+              onChange={(e) => setNewPolicy({ ...newPolicy, content_ar: e.target.value })}
               className="border px-3 py-2 rounded"
             />
             <button onClick={addPolicy} className="bg-green-600 text-white px-4 py-2 rounded-lg">
@@ -461,14 +579,26 @@ export default function SettingsPage() {
               {policies.map((p) => (
                 <tr key={p.id}>
                   <td className="p-2 border">{p.id}</td>
-                  <td className="p-2 border">{p.title}</td>
-                  <td className="p-2 border">{p.content}</td>
                   <td className="p-2 border">
+                    <div><b>EN:</b> {p.title.en}</div>
+                    <div><b>AR:</b> {p.title.ar}</div>
+                  </td>
+                  <td className="p-2 border">
+                    <div><b>EN:</b> {p.content.en}</div>
+                    <div><b>AR:</b> {p.content.ar}</div>
+                  </td>
+                  <td className="p-2 border flex gap-2">
                     <button
                       onClick={() => deletePolicy(p.id)}
                       className="bg-red-500 text-white px-2 py-1 rounded"
                     >
                       Delete
+                    </button>
+                    <button
+                      onClick={() => editPolicy(p)}
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                    >
+                      Edit
                     </button>
                   </td>
                 </tr>
@@ -477,6 +607,112 @@ export default function SettingsPage() {
           </table>
         </div>
       )}
+
+      {/* ----------------- help popup ----------------- */}
+      {showEditHelpPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 w-96 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Edit Help</h3>
+
+            <input
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Question (EN)"
+              value={currentHelp.question_en}
+              onChange={(e) => setCurrentHelp({ ...currentHelp, question_en: e.target.value })}
+            />
+
+            <input
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Question (AR)"
+              value={currentHelp.question_ar}
+              onChange={(e) => setCurrentHelp({ ...currentHelp, question_ar: e.target.value })}
+            />
+
+            <textarea
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Answer (EN)"
+              value={currentHelp.answer_en}
+              onChange={(e) => setCurrentHelp({ ...currentHelp, answer_en: e.target.value })}
+            />
+
+            <textarea
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Answer (AR)"
+              value={currentHelp.answer_ar}
+              onChange={(e) => setCurrentHelp({ ...currentHelp, answer_ar: e.target.value })}
+            />
+
+            <div className="flex justify-end gap-3 mt-3">
+              <button
+                className="bg-gray-400 text-white px-3 py-2 rounded"
+                onClick={() => setShowEditHelpPopup(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="bg-blue-600 text-white px-3 py-2 rounded"
+                onClick={updateHelp}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ----------------- policies popup ----------------- */}
+      {showEditPolicyPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 w-96 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Edit Policy</h3>
+
+            <input
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Title (EN)"
+              value={currentPolicy.title_en}
+              onChange={(e) => setCurrentPolicy({ ...currentPolicy, title_en: e.target.value })}
+            />
+
+            <input
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Title (AR)"
+              value={currentPolicy.title_ar}
+              onChange={(e) => setCurrentPolicy({ ...currentPolicy, title_ar: e.target.value })}
+            />
+
+            <textarea
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Content (EN)"
+              value={currentPolicy.content_en}
+              onChange={(e) => setCurrentPolicy({ ...currentPolicy, content_en: e.target.value })}
+            />
+
+            <textarea
+              className="border p-2 w-full mb-2 rounded"
+              placeholder="Content (AR)"
+              value={currentPolicy.content_ar}
+              onChange={(e) => setCurrentPolicy({ ...currentPolicy, content_ar: e.target.value })}
+            />
+
+            <div className="flex justify-end gap-3 mt-3">
+              <button
+                className="bg-gray-400 text-white px-3 py-2 rounded"
+                onClick={() => setShowEditPolicyPopup(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="bg-blue-600 text-white px-3 py-2 rounded"
+                onClick={updatePolicy}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
