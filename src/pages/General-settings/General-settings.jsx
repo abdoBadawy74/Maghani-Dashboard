@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 export default function AppVersionSettings() {
   const token = localStorage.getItem("token");
+  const [showPopup, setShowPopup] = useState(false);
 
   const [countries, setCountries] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
@@ -138,28 +139,61 @@ export default function AppVersionSettings() {
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-xl font-bold mb-4">Update App Version</h2>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          {Object.keys(form).map((key) => (
-            <div className="flex flex-col" key={key}>
-              <label className="font-medium mb-1">{key}</label>
-              <input
-                type="text"
-                className="border px-3 py-2 rounded"
-                value={form[key]}
-                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-              />
-            </div>
-          ))}
-        </div>
+        <p className="text-gray-600 mb-4">
+          Update both Android & iOS application versions.
+        </p>
 
         <button
-          onClick={updateVersion}
-          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg"
-          disabled={updating}
+          onClick={() => setShowPopup(true)}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg"
         >
-          {updating ? "Updating..." : "Update Version"}
+          Open Update Form
         </button>
       </div>
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-2xl">
+            <h2 className="text-2xl font-bold mb-4">Update App Version</h2>
+
+            {/* FORM */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.keys(form).map((key) => (
+                <div className="flex flex-col" key={key}>
+                  <label className="font-medium mb-1 capitalize">{key}</label>
+                  <input
+                    type="text"
+                    className="border px-3 py-2 rounded"
+                    value={form[key]}
+                    onChange={(e) =>
+                      setForm({ ...form, [key]: e.target.value })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* BUTTONS */}
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={updateVersion}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                disabled={updating}
+              >
+                {updating ? "Updating..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }
