@@ -1,7 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Home, Package, ShoppingCart, Users, Settings, LandPlot, Puzzle, ChartColumnStacked, Store, ChartBar, } from 'lucide-react';
 import { DashboardLayout } from './Components/DashboardLayout';
-import  Dashboard  from './pages/Dashboard/Dashboard';
+import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
 import Banners from './pages/Banners/Banners';
 // import RequireAuth from "./pages/Auth/RequireAuth"
@@ -19,6 +19,7 @@ import UsersPage from './pages/Users/Users';
 import GrowthTrend from './pages/Users/GrowthTrend';
 import UsersStatistics from './pages/Users/UsersStatistics';
 import Zones from './pages/Zones/Zones';
+import AppVersionSettings from './pages/General-settings/General-settings';
 
 
 function App() {
@@ -36,8 +37,9 @@ function App() {
     { label: 'Vendors Statistics', icon: ChartBar, path: '/vendors/statistics' },
     { label: "Users", icon: Users, path: "/users" },
     { label: "Users Statistics", icon: ChartBar, path: "/users/statistics" },
+    { label: 'General Settings', icon: Settings, path: '/general-settings' },
 
-    
+
 
     // { label: 'Products', icon: Package, path: '/products' },
     // { label: 'Customers', icon: Users, path: '/customers' },
@@ -69,6 +71,7 @@ function App() {
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/users/growth-trend" element={<GrowthTrend />} />
                 <Route path="/users/statistics" element={<UsersStatistics />} />
+                <Route path='/general-settings' element={<AppVersionSettings />} />
               </Routes>
             </DashboardLayout>
           </RequireAuth>

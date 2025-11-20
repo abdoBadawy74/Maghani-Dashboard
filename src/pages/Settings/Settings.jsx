@@ -326,6 +326,12 @@ export default function SettingsPage() {
                   <option value="email">Email</option>
                   <option value="phone">Phone</option>
                   <option value="whatsapp">Whatsapp</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="twitter">Twitter</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="linkedin">LinkedIn</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="website">Website</option>
                 </select>
 
                 <label className="font-medium">Value:</label>
