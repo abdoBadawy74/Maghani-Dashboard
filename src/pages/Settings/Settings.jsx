@@ -94,12 +94,15 @@ export default function SettingsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(contact), // contact is array of {type, value}
+        body: JSON.stringify(newContact), // contact is array of {type, value}
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
         toast.success("Contact info updated");
+        setShowAddPopup(false);
+        setNewContact({ type: "", value: "" });
+        fetchContact();
       } else {
         toast.error(data.message || "Update failed");
       }
@@ -109,8 +112,9 @@ export default function SettingsPage() {
   };
 
   const deleteContact = (index) => {
-    axios.delete(`https://api.maghni.acwad.tech/api/v1/setting/contact-us/${index}`, {
+    axios.delete(`https://api.maghni.acwad.tech/api/v1/setting/contact-us/`, {
       headers: { Authorization: `Bearer ${token}` },
+      params: { value: index }
     })
       .then(() => {
         toast.success("Contact info deleted");
