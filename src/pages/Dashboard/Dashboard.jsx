@@ -13,6 +13,7 @@ import ShippingTab from "./ShippingTab";
 import TrendsAndGeographicTab from "./TrendsAndGeographicTab";
 import SuperAdminDashboard from "./SuperAdminDashboard";
 import ExportSummaryPage from "./ExportSummaryPage";
+import CouponsStatsMock from "./Coupons";
 
 /*
   Simple Tabs layout.
@@ -130,12 +131,9 @@ export default function Dashboard() {
 
                 {/* Placeholder for other tabs: lazy-load them later */}
                 {activeTab == "coupons" && (
-                    <div className="bg-white rounded-lg shadow p-8 text-gray-600">
-                        <p className="font-medium">Section "{activeTab}" not implemented yet.</p>
-                        <p className="text-sm text-gray-500 mt-2">
-                            I can scaffold this section next — tell me which one you want after Overview.
-                        </p>
-                    </div>
+                    <Suspense fallback={<div className="flex justify-center py-20"><PulseLoader /></div>}>
+                        <CouponsStatsMock />
+                    </Suspense>
                 )}
             </div>
         </div>
