@@ -12,6 +12,9 @@ import {
     ResponsiveContainer,
 } from "recharts";
 
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
 export default function VendorsOverview() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -51,7 +54,14 @@ export default function VendorsOverview() {
     if (!data)
         return <p className="text-center text-red-500">No data found</p>;
 
-    const { statistics, categoryDistribution, vendorLocations, recentActivities, topPerformingVendors, growthTrend } = data;
+    const {
+        statistics,
+        categoryDistribution,
+        vendorLocations,
+        recentActivities,
+        topPerformingVendors,
+        growthTrend
+    } = data;
 
     const statColors = [
         "from-blue-600 to-blue-400",
@@ -64,7 +74,8 @@ export default function VendorsOverview() {
 
     return (
         <div className="space-y-10">
-            {/* 📊 الإحصائيات العامة */}
+
+            {/* 📊 General Statistics */}
             <section>
                 <h2 className="text-2xl font-bold mb-4 text-gray-800">General Statistics</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -111,37 +122,27 @@ export default function VendorsOverview() {
                 </div>
             </section>
 
-            {/* 📍 Vendor Locations */}
+            {/* 🗺️ Vendor Locations MAP */}
             <section>
-                <h2 className="text-2xl font-bold mb-4 text-gray-800">Vendor Locations</h2>
-                <div className="overflow-x-auto bg-white rounded-xl shadow-md">
-                    <table className="min-w-full text-left border-collapse">
-                        <thead className="bg-blue-100">
-                            <tr>
-                                <th className="py-2 px-4 font-semibold text-gray-700">Name</th>
-                                <th className="py-2 px-4 font-semibold text-gray-700">Latitude</th>
-                                <th className="py-2 px-4 font-semibold text-gray-700">Longitude</th>
-                                <th className="py-2 px-4 font-semibold text-gray-700">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {vendorLocations.map((v) => (
-                                <tr key={v.id} className="border-t hover:bg-gray-50">
-                                    <td className="py-2 px-4">{v.name}</td>
-                                    <td className="py-2 px-4">{v.latitude}</td>
-                                    <td className="py-2 px-4">{v.longitude}</td>
-                                    <td className="py-2 px-4">
-                                        <span
-                                            className={`px-3 py-1 rounded-full text-sm font-medium ${v.isOpen ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                                                }`}
-                                        >
-                                            {v.isOpen ? "Open" : "Closed"}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Vendor Locations Map</h2>
+
+                <div className="rounded-xl overflow-hidden shadow-lg">
+                    <MapContainer
+                        center={[25.276987, 55.296249]}  // UAE center
+                        zoom={5}
+                        style={{ height: "400px", width: "100%" }}
+                    >
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                        {vendorLocations.map((v) => (
+                            <Marker key={v.id} position={[v.latitude, v.longitude]}>
+                                <Popup>
+                                    <b>{v.name}</b><br />
+                                    Status: {v.isOpen ? "Open" : "Closed"}
+                                </Popup>
+                            </Marker>
+                        ))}
+                    </MapContainer>
                 </div>
             </section>
 
@@ -151,10 +152,7 @@ export default function VendorsOverview() {
                 <div className="bg-white rounded-xl shadow-md p-4">
                     <ul className="space-y-2">
                         {recentActivities.map((act, idx) => (
-                            <li
-                                key={idx}
-                                className="flex justify-between border-b pb-2 last:border-none"
-                            >
+                            <li key={idx} className="flex justify-between border-b pb-2 last:border-none">
                                 <span className="font-medium">{act.activity}</span>
                                 <span className="text-blue-600 font-semibold">{act.count}</span>
                             </li>
