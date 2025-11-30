@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Home, Package, ShoppingCart, Users, Settings, LandPlot, Puzzle, ChartColumnStacked, Store, ChartBar, } from 'lucide-react';
+import { Home, Package, ShoppingCart, Users, Settings, LandPlot, Puzzle, ChartColumnStacked, Store, ChartBar, Wallet, } from 'lucide-react';
 import { DashboardLayout } from './Components/DashboardLayout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Auth/Login';
@@ -20,6 +20,7 @@ import GrowthTrend from './pages/Users/GrowthTrend';
 import UsersStatistics from './pages/Users/UsersStatistics';
 import Zones from './pages/Zones/Zones';
 import AppVersionSettings from './pages/General-settings/General-settings';
+import AdminWalletPage from './pages/Wallet/Wallet';
 
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
     { label: "Users", icon: Users, path: "/users" },
     { label: "Users Statistics", icon: ChartBar, path: "/users/statistics" },
     { label: 'General Settings', icon: Settings, path: '/general-settings' },
+    { label: 'Wallet', icon: Wallet, path: '/wallet' },
 
 
 
@@ -72,6 +74,7 @@ function App() {
                 <Route path="/users/growth-trend" element={<GrowthTrend />} />
                 <Route path="/users/statistics" element={<UsersStatistics />} />
                 <Route path='/general-settings' element={<AppVersionSettings />} />
+                <Route path='/wallet' element={<AdminWalletPage />} />
               </Routes>
             </DashboardLayout>
           </RequireAuth>
