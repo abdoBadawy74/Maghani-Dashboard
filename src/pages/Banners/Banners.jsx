@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Plus, X, Pencil, Trash } from "lucide-react"; // أيقونات
+import { Spin } from "antd";
 
 const API_URL = "https://api.maghni.acwad.tech/api/v1/banners";
 
@@ -12,6 +13,7 @@ export default function Banners() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
 
   // States for form (used for add & edit)
   const [imageFile, setImageFile] = useState(null);
@@ -144,6 +146,14 @@ export default function Banners() {
     fetchBanners();
   }, []);
 
+  if(banners === null) {
+    return (
+      <div className="p-6">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -158,7 +168,9 @@ export default function Banners() {
 
       {/* banners grid */}
       {loading ? (
-        <p className="text-gray-500">Loading banners...</p>
+       <div className="flex justify-center items-center">
+         <Spin size="large" />
+       </div>
       ) : banners.length === 0 ? (
         <p className="text-gray-500">No banners found.</p>
       ) : (
