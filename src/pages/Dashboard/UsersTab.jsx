@@ -11,7 +11,8 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
-// import moment from "moment";
+
+const { RangePicker } = DatePicker;
 
 export default function UsersTab() {
     const [data, setData] = useState(null);
@@ -89,17 +90,22 @@ export default function UsersTab() {
                 <Col>
                     <Row gutter={8} align="middle">
                         <Col>
-                            <DatePicker
-                                value={startDate}
-                                onChange={(date) => setStartDate(date)}
-                                placeholder="Start Date"
-                            />
-                        </Col>
-                        <Col>
-                            <DatePicker
-                                value={endDate}
-                                onChange={(date) => setEndDate(date)}
-                                placeholder="End Date"
+                            <RangePicker
+                                value={
+                                    startDate && endDate
+                                        ? [startDate, endDate]
+                                        : null
+                                }
+                                onChange={(values) => {
+                                    if (values) {
+                                        setStartDate(values[0]);
+                                        setEndDate(values[1]);
+                                    } else {
+                                        setStartDate(null);
+                                        setEndDate(null);
+                                    }
+                                }}
+                                placeholder={["Start Date", "End Date"]}
                             />
                         </Col>
                         <Col>

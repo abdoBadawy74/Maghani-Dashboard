@@ -14,6 +14,8 @@ import {
     ResponsiveContainer,
 } from "recharts";
 
+const { RangePicker } = DatePicker;
+
 export default function RevenueTab() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -86,19 +88,21 @@ export default function RevenueTab() {
         <div className="space-y-8">
             {/* Header */}
             <div className="flex gap-2 items-center">
-                <DatePicker
-                    value={startDate ? dayjs(startDate) : null}
-                    onChange={(date, dateString) => setStartDate(dateString)}
-                    className="w-[160px]"
-                    format="YYYY-MM-DD"
-                    placeholder="Start Date"
-                />
-                <DatePicker
-                    value={endDate ? dayjs(endDate) : null}
-                    onChange={(date, dateString) => setEndDate(dateString)}
-                    className="w-[160px]"
-                    format="YYYY-MM-DD"
-                    placeholder="End Date"
+                <RangePicker
+                    value={
+                        startDate && endDate
+                            ? [dayjs(startDate), dayjs(endDate)]
+                            : null
+                    }
+                    onChange={(values) => {
+                        if (values) {
+                            setStartDate(values[0].format("YYYY-MM-DD"));
+                            setEndDate(values[1].format("YYYY-MM-DD"));
+                        } else {
+                            setStartDate("");
+                            setEndDate("");
+                        }
+                    }}
                 />
                 <Button type="primary" onClick={fetchData}>
                     Filter

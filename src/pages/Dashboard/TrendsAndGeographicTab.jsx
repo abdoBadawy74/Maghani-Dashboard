@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
-import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Button, Row, Col, Spin } from "antd";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+const { RangePicker } = DatePicker;
 
 const markerIcon = new L.Icon({
     iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
@@ -17,10 +19,9 @@ export default function TrendsAndGeographicTab() {
     const [geoData, setGeoData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [geoLoading, setGeoLoading] = useState(false);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [dates, setDates] = useState([]);
 
-    // Fetch Trends (لا يحتاج تاريخ)
+    // Fetch Trends
     const fetchTrends = async () => {
         try {
             setLoading(true);
@@ -35,10 +36,14 @@ export default function TrendsAndGeographicTab() {
         }
     };
 
-    // Fetch Geographic Data (يحتاج تاريخ)
+    // Fetch geo data
     const fetchGeoData = async () => {
         try {
             setGeoLoading(true);
+
+            const startDate = dates?.[0]?.format("YYYY-MM-DD");
+            const endDate = dates?.[1]?.format("YYYY-MM-DD");
+
             const res = await axios.get(
                 "https://api.maghni.acwad.tech/api/v1/dashboard/geographic/stats",
                 {
@@ -63,101 +68,98 @@ export default function TrendsAndGeographicTab() {
 
     return (
         <div className="space-y-10">
-            <h2 className="text-2xl font-bold mb-4">Dashboard Trends & Geographic Stats</h2>
+            <h2 className="text-2xl font-bold mb-4">
+                Dashboard Trends & Geographic Stats
+            </h2>
 
-            {/* Loading Spinner for Trends */}
+            {/* ================== Loading Trends ================== */}
             {loading && (
                 <div className="flex justify-center py-10">
-                    <PulseLoader color="#2563eb" />
+                    <Spin size="large" />
                 </div>
             )}
 
-            {/* Trends Cards */}
+            {/* ================== Trend Cards ================== */}
             {!loading && trends && (
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                    <TrendCard
-                        title="Revenue"
-                        current={trends.revenue.current}
-                        change={trends.revenue.change}
-                        direction={trends.revenue.direction}
-                        color="bg-blue-500"
-                        suffix=" EGP"
-                    />
-                    <TrendCard
-                        title="Orders"
-                        current={trends.orders.current}
-                        change={trends.orders.change}
-                        direction={trends.orders.direction}
-                        color="bg-green-500"
-                    />
-                    <TrendCard
-                        title="Users"
-                        current={trends.users.current}
-                        change={trends.users.change}
-                        direction={trends.users.direction}
-                        color="bg-yellow-500"
-                    />
-                    <TrendCard
-                        title="Avg Order Value"
-                        current={trends.averageOrderValue.current}
-                        change={trends.averageOrderValue.change}
-                        direction={trends.averageOrderValue.direction}
-                        color="bg-purple-500"
-                        suffix=" EGP"
-                    />
-                </div>
+                <Row gutter={16}>
+                    <Col xs={24} sm={12} lg={6}>
+                        <TrendCard
+                            title="Revenue"
+                            current={trends.revenue.current}
+                            change={trends.revenue.change}
+                            direction={trends.revenue.direction}
+                            color="#2563eb"
+                            suffix=" EGP"
+                        />
+                    </Col>
+
+                    <Col xs={24} sm={12} lg={6}>
+                        <TrendCard
+                            title="Orders"
+                            current={trends.orders.current}
+                            change={trends.orders.change}
+                            direction={trends.orders.direction}
+                            color="#10b981"
+                        />
+                    </Col>
+
+                    <Col xs={24} sm={12} lg={6}>
+                        <TrendCard
+                            title="Users"
+                            current={trends.users.current}
+                            change={trends.users.change}
+                            direction={trends.users.direction}
+                            color="#f59e0b"
+                        />
+                    </Col>
+
+                    <Col xs={24} sm={12} lg={6}>
+                        <TrendCard
+                            title="Avg Order Value"
+                            current={trends.averageOrderValue.current}
+                            change={trends.averageOrderValue.change}
+                            direction={trends.averageOrderValue.direction}
+                            color="#8b5cf6"
+                            suffix=" EGP"
+                        />
+                    </Col>
+                </Row>
             )}
 
-            {/* Geographic Section */}
+            {/* ================== Geographic Section ================== */}
             <div className="space-y-6">
                 <h3 className="text-xl font-semibold">Geographic Statistics</h3>
 
-                {/* Date Filters */}
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Start Date
-                        </label>
-                        <input
-                            type="date"
-                            className="border rounded-md px-2 py-1"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
+                {/* Date Range Filter */}
+                <Row gutter={12} align="middle">
+                    <Col>
+                        <RangePicker
+                            value={dates}
+                            onChange={(values) => setDates(values)}
                         />
-                    </div>
+                    </Col>
+                    <Col>
+                        <Button type="primary" onClick={fetchGeoData} loading={geoLoading}>
+                            Apply Filters
+                        </Button>
+                    </Col>
+                </Row>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            End Date
-                        </label>
-                        <input
-                            type="date"
-                            className="border rounded-md px-2 py-1"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                        />
-                    </div>
-
-                    <button
-                        onClick={fetchGeoData}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition self-end"
-                    >
-                        {geoLoading ? "Loading..." : "Apply Filters"}
-                    </button>
-                </div>
-
-                {/* Map Loading */}
+                {/* ================== Map Loading ================== */}
                 {geoLoading && (
                     <div className="flex justify-center py-10">
-                        <PulseLoader color="#2563eb" />
+                        <Spin size="large" />
                     </div>
                 )}
 
-                {/* Map or No Data */}
+                {/* ================== No Data ================== */}
                 {!geoLoading && geoData.length === 0 && (
-                    <p className="text-center text-gray-600">No geographic data available.</p>
+                    <p className="text-center text-gray-600">
+                        No geographic data available.
+                    </p>
                 )}
 
+                {/* ================== Map ================== */}
                 {!geoLoading && geoData.length > 0 && (
                     <div className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
                         <MapContainer
@@ -167,7 +169,7 @@ export default function TrendsAndGeographicTab() {
                             style={{ width: "100%", height: "100%" }}
                         >
                             <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                                attribution='&copy; OpenStreetMap contributors'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
 
@@ -193,27 +195,26 @@ export default function TrendsAndGeographicTab() {
     );
 }
 
-// ✅ TrendCard Component
+// ================== Trend Card ==================
 function TrendCard({ title, current, change, direction, color, suffix }) {
     const arrow =
         direction === "up" ? "▲" : direction === "down" ? "▼" : "→";
+
     const arrowColor =
         direction === "up"
             ? "text-green-300"
             : direction === "down"
-                ? "text-red-300"
-                : "text-gray-300";
+            ? "text-red-300"
+            : "text-gray-300";
 
     return (
-        <div className={`p-5 rounded-xl text-white shadow ${color}`}>
+        <Card style={{ backgroundColor: color, color: "#fff" }}>
             <h4 className="text-sm uppercase opacity-80">{title}</h4>
             <p className="text-2xl font-bold mt-1">
                 <CountUp end={current || 0} duration={2.5} separator="," decimals={2} />
                 {suffix && <span>{suffix}</span>}
             </p>
-            <p className={`text-sm mt-1 ${arrowColor}`}>
-                {arrow} {change?.toFixed(2)}%
-            </p>
-        </div>
+            <p className={`text-sm mt-1 ${arrowColor}`}>{arrow} {change?.toFixed(2)}%</p>
+        </Card>
     );
 }
