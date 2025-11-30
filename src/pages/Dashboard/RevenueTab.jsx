@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
-import { PulseLoader } from "react-spinners";
+import { DatePicker, Button, Table, Spin } from "antd";
+// import moment from "moment"
+import dayjs from "dayjs";
 import {
     LineChart,
     Line,
@@ -21,10 +23,17 @@ export default function RevenueTab() {
     const fetchData = async () => {
         try {
             setLoading(true);
+
+            const token = localStorage.getItem("token");
+
             const res = await axios.get(
                 `https://api.maghni.acwad.tech/api/v1/dashboard/revenue/breakdown`,
-                { params: { startDate, endDate } }
+                {
+                    params: { startDate, endDate },
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
+
             setData(res.data);
         } catch (err) {
             console.error("Error fetching revenue data:", err);
@@ -33,7 +42,6 @@ export default function RevenueTab() {
         }
     };
 
-    // أول تحميل فقط
     useEffect(() => {
         fetchData();
     }, []);
@@ -41,63 +49,68 @@ export default function RevenueTab() {
     if (loading)
         return (
             <div className="flex justify-center py-20">
-                <PulseLoader />
+                <Spin size="large" />
             </div>
         );
 
     if (!data)
-        return <p className="text-center text-gray-600">No data available.</p>;
+        return (
+            <p className="text-center text-gray-600">
+                No data available.
+            </p>
+        );
+
+    // Antd Table Columns
+    const vendorColumns = [
+        {
+            title: "Vendor Name",
+            dataIndex: "vendorName",
+            key: "vendorName",
+        },
+        {
+            title: "Revenue (EGP)",
+            dataIndex: "revenue",
+            key: "revenue",
+            render: (value) => (
+                <CountUp end={value || 0} duration={2.5} separator="," />
+            ),
+        },
+        {
+            title: "Orders",
+            dataIndex: "orderCount",
+            key: "orderCount",
+        },
+    ];
 
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex justify-between items-center flex-wrap gap-2">
-                <h2 className="text-2xl font-bold">Revenue Breakdown</h2>
-
-                <div className="flex gap-2 items-center">
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="border px-2 py-1 rounded"
-                    />
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="border px-2 py-1 rounded"
-                    />
-                    <button
-                        onClick={fetchData}
-                        className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition"
-                    >
-                        Filter
-                    </button>
-                </div>
+            <div className="flex gap-2 items-center">
+                <DatePicker
+                    value={startDate ? dayjs(startDate) : null}
+                    onChange={(date, dateString) => setStartDate(dateString)}
+                    className="w-[160px]"
+                    format="YYYY-MM-DD"
+                    placeholder="Start Date"
+                />
+                <DatePicker
+                    value={endDate ? dayjs(endDate) : null}
+                    onChange={(date, dateString) => setEndDate(dateString)}
+                    className="w-[160px]"
+                    format="YYYY-MM-DD"
+                    placeholder="End Date"
+                />
+                <Button type="primary" onClick={fetchData}>
+                    Filter
+                </Button>
             </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <SummaryCard
-                    title="Total Revenue"
-                    value={data.totalRevenue}
-                    color="bg-blue-500"
-                />
-                <SummaryCard
-                    title="Completed Amount"
-                    value={data.totalCOMPLETEDAmount}
-                    color="bg-green-500"
-                />
-                <SummaryCard
-                    title="Total Discounts"
-                    value={data.totalDiscounts}
-                    color="bg-yellow-500"
-                />
-                <SummaryCard
-                    title="Total Shipping"
-                    value={data.totalShipping}
-                    color="bg-purple-500"
-                />
+                <SummaryCard title="Total Revenue" value={data.totalRevenue} color="bg-blue-500" />
+                <SummaryCard title="Completed Amount" value={data.totalCOMPLETEDAmount} color="bg-green-500" />
+                <SummaryCard title="Total Discounts" value={data.totalDiscounts} color="bg-yellow-500" />
+                <SummaryCard title="Total Shipping" value={data.totalShipping} color="bg-purple-500" />
             </div>
 
             {/* Daily Revenue Chart */}
@@ -108,7 +121,9 @@ export default function RevenueTab() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis
                             dataKey="date"
-                            tickFormatter={(d) => new Date(d).toLocaleDateString("en-GB")}
+                            tickFormatter={(d) =>
+                                new Date(d).toLocaleDateString("en-GB")
+                            }
                         />
                         <YAxis />
                         <Tooltip
@@ -130,36 +145,18 @@ export default function RevenueTab() {
             {/* Revenue by Vendor Table */}
             <div className="bg-white shadow rounded-lg p-4">
                 <h3 className="font-semibold text-lg mb-3">Revenue by Vendor</h3>
-                <table className="w-full border-collapse">
-                    <thead>
-                        <tr className="bg-gray-100 text-left">
-                            <th className="p-2 border">Vendor Name</th>
-                            <th className="p-2 border">Revenue</th>
-                            <th className="p-2 border">Orders</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.revenueByVendor.map((v) => (
-                            <tr key={v.vendorId} className="border-b hover:bg-gray-50">
-                                <td className="p-2 border">{v.vendorName}</td>
-                                <td className="p-2 border">
-                                    <CountUp
-                                        end={v.revenue || 0}
-                                        duration={2.5}
-                                        separator=","
-                                    />{" "}
-                                    EGP
-                                </td>
-                                <td className="p-2 border">{v.orderCount}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Table
+                    columns={vendorColumns}
+                    dataSource={data.revenueByVendor}
+                    rowKey="vendorId"
+                    pagination={false}
+                />
             </div>
         </div>
     );
 }
 
+// Summary Card
 function SummaryCard({ title, value, color }) {
     return (
         <div className={`p-4 rounded-xl text-white shadow ${color}`}>
