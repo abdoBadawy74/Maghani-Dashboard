@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
-import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Button, Row, Col, Spin } from "antd";
 import {
     PieChart,
     Pie,
@@ -19,8 +19,8 @@ import {
 export default function ProductsTab() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
 
     const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -31,8 +31,8 @@ export default function ProductsTab() {
                 `https://api.maghni.acwad.tech/api/v1/dashboard/products/performance`,
                 {
                     params: {
-                        startDate: startDate || undefined,
-                        endDate: endDate || undefined,
+                        startDate: startDate ? startDate.format("YYYY-MM-DD") : undefined,
+                        endDate: endDate ? endDate.format("YYYY-MM-DD") : undefined,
                     },
                 }
             );
@@ -53,43 +53,32 @@ export default function ProductsTab() {
             <h2 className="text-2xl font-bold mb-4">Products Performance</h2>
 
             {/* Date Filter Section */}
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Start Date
-                    </label>
-                    <input
-                        type="date"
-                        className="border rounded-md px-2 py-1"
+            <Row gutter={8} align="middle" className="mb-6">
+                <Col>
+                    <DatePicker
                         value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+                        onChange={(date) => setStartDate(date)}
+                        placeholder="Start Date"
                     />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        End Date
-                    </label>
-                    <input
-                        type="date"
-                        className="border rounded-md px-2 py-1"
+                </Col>
+                <Col>
+                    <DatePicker
                         value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
+                        onChange={(date) => setEndDate(date)}
+                        placeholder="End Date"
                     />
-                </div>
-
-                <button
-                    onClick={fetchData}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition self-end"
-                >
-                    {loading ? "Loading..." : "Apply Filters"}
-                </button>
-            </div>
+                </Col>
+                <Col>
+                    <Button type="primary" onClick={fetchData} loading={loading}>
+                        Apply Filters
+                    </Button>
+                </Col>
+            </Row>
 
             {/* Loading Spinner */}
             {loading && (
                 <div className="flex justify-center py-10">
-                    <PulseLoader color="#2563eb" />
+                    <Spin size="large" />
                 </div>
             )}
 
@@ -102,26 +91,27 @@ export default function ProductsTab() {
             {!loading && data && (
                 <>
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <SummaryCard
-                            title="Total Products"
-                            value={data.totalProducts}
-                            color="bg-blue-500"
-                            suffix=""
-                        />
-                        <SummaryCard
-                            title="Average Product Price"
-                            value={data.averageProductPrice}
-                            color="bg-green-500"
-                            suffix=" EGP"
-                        />
-                    </div>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                            <SummaryCard
+                                title="Total Products"
+                                value={data.totalProducts}
+                                color="#2563eb"
+                                suffix=""
+                            />
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <SummaryCard
+                                title="Average Product Price"
+                                value={data.averageProductPrice}
+                                color="#10b981"
+                                suffix=" EGP"
+                            />
+                        </Col>
+                    </Row>
 
                     {/* Top Selling Products */}
-                    <div className="bg-white shadow rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3">
-                            Top Selling Products
-                        </h3>
+                    <Card title="Top Selling Products" className="mt-6">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.topSellingProducts}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -163,13 +153,10 @@ export default function ProductsTab() {
                                 />
                             </BarChart>
                         </ResponsiveContainer>
-                    </div>
+                    </Card>
 
                     {/* Products by Category */}
-                    <div className="bg-white shadow rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3">
-                            Products by Category
-                        </h3>
+                    <Card title="Products by Category" className="mt-6">
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -204,7 +191,7 @@ export default function ProductsTab() {
                                 <Legend />
                             </PieChart>
                         </ResponsiveContainer>
-                    </div>
+                    </Card>
                 </>
             )}
         </div>
@@ -213,12 +200,12 @@ export default function ProductsTab() {
 
 function SummaryCard({ title, value, color, suffix }) {
     return (
-        <div className={`p-5 rounded-xl text-white shadow ${color}`}>
+        <Card style={{ backgroundColor: color, color: "#fff" }}>
             <h4 className="text-sm uppercase opacity-80">{title}</h4>
             <p className="text-2xl font-bold mt-1">
                 <CountUp end={value || 0} duration={2.5} separator="," decimals={2} />{" "}
                 {suffix}
             </p>
-        </div>
+        </Card>
     );
 }
