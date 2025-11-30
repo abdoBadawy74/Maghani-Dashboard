@@ -4,7 +4,7 @@ import axios from "axios";
 import CountUp from "react-countup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Table, Row, Col, Spin } from "antd";
 import {
     LineChart,
     Line,
@@ -21,8 +21,8 @@ import {
     Legend,
 } from "recharts";
 
+const { RangePicker } = DatePicker;
 const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
-
 export default function SuperAdminDashboard() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ export default function SuperAdminDashboard() {
     if (loading) {
         return (
             <div className="h-[70vh] flex items-center justify-center">
-                <PulseLoader color="#2563eb" size={12} />
+                <Spin size="large" />
             </div>
         );
     }
@@ -88,6 +88,40 @@ export default function SuperAdminDashboard() {
     const topPerformers = data.topPerformers || {};
     const recentActivity = data.recentActivity || {};
 
+    const vendorColumns = [
+        { title: "Vendor", dataIndex: "vendorName", key: "vendorName" },
+        { title: "Revenue", dataIndex: "revenue", key: "revenue", render: (val) => `${Number(val).toLocaleString()} EGP` },
+        { title: "Orders", dataIndex: "orderCount", key: "orderCount" },
+    ];
+    const paymentMethodColumns = [
+        { title: "Method", dataIndex: "paymentMethod", key: "paymentMethod" },
+        { title: "Orders", dataIndex: "count", key: "count" },
+        { title: "Amount", dataIndex: "amount", key: "amount", render: (val) => `${Number(val).toLocaleString()} EGP` },
+    ];
+
+    const topProductsColumns = [
+        {
+            title: "Product", dataIndex: "productName", key: "productName", render: (name) => {
+                try { const parsed = JSON.parse(name); return parsed?.en || parsed?.ar || name; }
+                catch { return name; }
+            }
+        },
+        { title: "Sold", dataIndex: "totalSold", key: "totalSold" },
+        { title: "Revenue", dataIndex: "totalRevenue", key: "totalRevenue", render: (val) => `${Number(val).toLocaleString()} EGP` },
+        { title: "Orders", dataIndex: "orderCount", key: "orderCount", render: (val) => val ?? "-" },
+    ];
+
+    const topPerformersColumns = [
+        { title: "Name", dataIndex: "vendorName", key: "vendorName" },
+        { title: "Orders", dataIndex: "orderCount", key: "orderCount" },
+        { title: "Revenue", dataIndex: "revenue", key: "revenue", render: (val) => `${Number(val).toLocaleString()} EGP` },
+    ]
+
+    const topCustomersColumns = [
+        { title: "Name", dataIndex: "name", key: "name" },
+        { title: "Orders", dataIndex: "orderCount", key: "orderCount" },
+        { title: "Total Spent", dataIndex: "totalSpent", key: "totalSpent", render: (val) => `${Number(val).toLocaleString()} EGP` },
+    ];
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <ToastContainer />
@@ -95,29 +129,13 @@ export default function SuperAdminDashboard() {
                 <h1 className="text-3xl font-extrabold">Super Admin </h1>
                 {/* Date Filters */}
                 <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Start Date
-                        </label>
-                        <input
-                            type="date"
-                            className="border rounded-md px-2 py-1"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                        />
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            End Date
-                        </label>
-                        <input
-                            type="date"
-                            className="border rounded-md px-2 py-1"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                        />
-                    </div>
+                    <RangePicker
+                        onChange={(dates, dateStrings) => {
+                            setStartDate(dateStrings[0]);
+                            setEndDate(dateStrings[1]);
+                        }}
+                    />
 
                     <button
                         onClick={fetchSuperAdmin}
@@ -130,14 +148,27 @@ export default function SuperAdminDashboard() {
             </div>
 
             {/* Overview cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-                <StatCard title="Total Revenue" value={overview.totalRevenue} color="bg-green-600" suffix="EGP" />
-                <StatCard title="Total Orders" value={overview.totalOrders} color="bg-blue-600" />
-                <StatCard title="Total Users" value={overview.totalUsers} color="bg-indigo-600" />
-                <StatCard title="Total Products" value={overview.totalProducts} color="bg-yellow-600" />
-                <StatCard title="Total Vendors" value={overview.totalVendors} color="bg-pink-600" />
-                <StatCard title="Avg Order Value" value={overview.averageOrderValue} color="bg-purple-600" suffix="EGP" decimals={2} />
-            </div>
+            <Row gutter={[16, 16]} className="mb-6">
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Revenue" value={overview.totalRevenue} color="#10b981" suffix="EGP" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Orders" value={overview.totalOrders} color="#2563eb" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Users" value={overview.totalUsers} color="#4f46e5" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Products" value={overview.totalProducts} color="#facc15" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Vendors" value={overview.totalVendors} color="#ec4899" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Avg Order Value" value={overview.averageOrderValue} color="#8b5cf6" suffix="EGP" decimals={2} />
+                </Col>
+            </Row>
+
 
             {/* Main grid: Revenue chart | Orders pie | Revenue by vendor */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -182,10 +213,13 @@ export default function SuperAdminDashboard() {
 
             {/* Two column: Revenue by vendor + Orders payment breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white rounded-2xl shadow p-4">
-                    <h3 className="text-lg font-semibold mb-3">Revenue by Vendor</h3>
-                    {revenue.revenueByVendor && revenue.revenueByVendor.length > 0 ? (
-                        <>
+
+
+                {revenue.revenueByVendor && revenue.revenueByVendor.length > 0 ? (
+                    <>
+
+                        {/* /////////////////////////////////////////////////////////////////////////////////////// */}
+                        <Card title="Revenue by Vendor" className="mb-6">
                             <ResponsiveContainer width="100%" height={220}>
                                 <BarChart data={revenue.revenueByVendor}>
                                     <CartesianGrid strokeDasharray="3 3" />
@@ -195,31 +229,18 @@ export default function SuperAdminDashboard() {
                                     <Bar dataKey="revenue" name="Revenue" fill="#10b981" />
                                 </BarChart>
                             </ResponsiveContainer>
-                            <div className="mt-3">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            <th className="p-2 text-left">Vendor</th>
-                                            <th className="p-2 text-right">Revenue</th>
-                                            <th className="p-2 text-right">Orders</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {revenue.revenueByVendor.map((v) => (
-                                            <tr key={v.vendorId} className="border-b">
-                                                <td className="p-2">{v.vendorName}</td>
-                                                <td className="p-2 text-right">{Number(v.revenue).toLocaleString()} EGP</td>
-                                                <td className="p-2 text-right">{v.orderCount}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </>
-                    ) : (
-                        <p className="text-gray-500">No vendor revenue data</p>
-                    )}
-                </div>
+                            <Table
+                                dataSource={revenue.revenueByVendor || []}
+                                columns={vendorColumns}
+                                rowKey="vendorId"
+                                pagination={false}
+                            />
+                        </Card>
+                    </>
+                ) : (
+                    <p className="text-gray-500">No vendor revenue data</p>
+                )}
+
 
                 <div className="bg-white rounded-2xl shadow p-4">
                     <h3 className="text-lg font-semibold mb-3">Orders Payment Breakdown</h3>
@@ -243,26 +264,15 @@ export default function SuperAdminDashboard() {
 
                     {/* Payment methods */}
                     <div className="mt-4">
-                        <h4 className="font-medium mb-2">By Payment Method</h4>
                         {orders.ordersByPaymentMethod && orders.ordersByPaymentMethod.length > 0 ? (
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-100">
-                                    <tr>
-                                        <th className="p-2 text-left">Method</th>
-                                        <th className="p-2 text-right">Orders</th>
-                                        <th className="p-2 text-right">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orders.ordersByPaymentMethod.map((m) => (
-                                        <tr key={m.paymentMethod} className="border-b">
-                                            <td className="p-2">{m.paymentMethod}</td>
-                                            <td className="p-2 text-right">{m.count}</td>
-                                            <td className="p-2 text-right">{Number(m.amount).toLocaleString()} EGP</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <Card title="Orders by Payment Method" className="mb-6">
+                                <Table
+                                    dataSource={orders.ordersByPaymentMethod || []}
+                                    columns={paymentMethodColumns}
+                                    rowKey="paymentMethod"
+                                    pagination={false}
+                                />
+                            </Card>
                         ) : (
                             <p className="text-gray-500">No payment method data</p>
                         )}
@@ -273,93 +283,59 @@ export default function SuperAdminDashboard() {
             {/* Products and Top Performers */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 {/* Top Selling Products */}
-                <div className="bg-white rounded-2xl shadow p-4 lg:col-span-2">
-                    <h3 className="text-lg font-semibold mb-3">Top Selling Products</h3>
-                    {products.topSellingProducts && products.topSellingProducts.length > 0 ? (
-                        <div className="space-y-3">
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-100">
-                                    <tr>
-                                        <th className="p-2 text-left">Product</th>
-                                        <th className="p-2 text-right">Sold</th>
-                                        <th className="p-2 text-right">Revenue</th>
-                                        <th className="p-2 text-right">Orders</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {products.topSellingProducts.map((p) => {
-                                        // productName in response may be a JSON string: try parse safely
-                                        let name = p.productName;
-                                        try {
-                                            const parsed = JSON.parse(p.productName);
-                                            name = parsed?.en || parsed?.ar || p.productName;
-                                        } catch (e) {
-                                            // ignore parse error, use original
-                                        }
-                                        return (
-                                            <tr key={p.productId} className="border-b">
-                                                <td className="p-2">{name}</td>
-                                                <td className="p-2 text-right">{p.totalSold}</td>
-                                                <td className="p-2 text-right">{Number(p.totalRevenue || p.revenue || 0).toLocaleString()} EGP</td>
-                                                <td className="p-2 text-right">{p.orderCount ?? "-"}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+
+                {products.topSellingProducts && products.topSellingProducts.length > 0 ? (
+                    <div className="space-y-3">
+                        <Card title="Top Selling Products" className="mb-6">
+                            <Table
+                                dataSource={products.topSellingProducts || []}
+                                columns={topProductsColumns}
+                                rowKey="productId"
+                                pagination={false}
+                            />
+                        </Card>
+                    </div>
+                ) : (
+                    <p className="text-gray-500">No top products data</p>
+                )}
+
+
+                {/* Top Vendors / Customers summary */}
+
+
+
+                <div className="mb-4 min-h-full">
+                    {topPerformers.topVendors && topPerformers.topVendors.length > 0 ? (
+                        <Card title="Top Vendors" className="mb-6">
+                            <Table
+                                dataSource={topPerformers.topVendors || []}
+                                columns={topPerformersColumns}
+                                rowKey="vendorId"
+                                pagination={false}
+                            />
+                        </Card>
                     ) : (
-                        <p className="text-gray-500">No top products data</p>
+                        <p className="text-gray-500">No top vendors</p>
                     )}
                 </div>
 
-                {/* Top Vendors / Customers summary */}
-                <div className="bg-white rounded-2xl shadow p-4">
-                    <h3 className="text-lg font-semibold mb-3">Top Performers</h3>
+                <div>
 
-                    <div className="mb-4">
-                        <h4 className="font-medium">Vendors</h4>
-                        {topPerformers.topVendors && topPerformers.topVendors.length > 0 ? (
-                            <ul className="space-y-2 mt-2">
-                                {topPerformers.topVendors.map((v) => (
-                                    <li key={v.vendorId} className="flex justify-between items-center">
-                                        <div>
-                                            <div className="font-medium">{v.vendorName}</div>
-                                            <div className="text-xs text-gray-500">Orders: {v.orderCount}</div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="font-semibold">{Number(v.revenue).toLocaleString()} EGP</div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">No top vendors</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <h4 className="font-medium">Top Customers</h4>
-                        {topPerformers.topCustomers && topPerformers.topCustomers.length > 0 ? (
-                            <ul className="space-y-2 mt-2">
-                                {topPerformers.topCustomers.map((c) => (
-                                    <li key={c.userId} className="flex justify-between items-center">
-                                        <div>
-                                            <div className="font-medium">{c.name}</div>
-                                            <div className="text-xs text-gray-500">Orders: {c.orderCount}</div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="font-semibold">{Number(c.totalSpent).toLocaleString()} EGP</div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">No top customers</p>
-                        )}
-                    </div>
+                    {topPerformers.topCustomers && topPerformers.topCustomers.length > 0 ? (
+                        <Card title="Top  Customers" className="mb-6">
+                            <Table
+                                dataSource={topPerformers.topCustomers || []}
+                                columns={topCustomersColumns}
+                                rowKey="userId"
+                                pagination={false}
+                            />
+                        </Card>
+                    ) : (
+                        <p className="text-gray-500">No top customers</p>
+                    )}
                 </div>
             </div>
+
 
             {/* Users & Vendors summaries + recent activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -424,19 +400,23 @@ export default function SuperAdminDashboard() {
     );
 }
 
-/* ---------- Small reusable components ---------- */
-
-function StatCard({ title, value, color = "bg-gray-700", suffix = "", decimals = 0 }) {
+function AntdStatCard({ title, value, color = "#2563eb", suffix = "", decimals = 0 }) {
     return (
-        <div className={`${color} text-white p-4 rounded-xl shadow flex flex-col justify-between`}>
-            <div>
-                <div className="text-sm opacity-90">{title}</div>
-                <div className="text-2xl font-bold mt-2">
-                    <CountUp end={Number(value) || 0} duration={1.8} separator="," decimals={decimals} />
-                    {suffix && <span className="ml-1 text-sm">{suffix}</span>}
-                </div>
+        <Card
+            bordered={false}
+            style={{
+                backgroundColor: color,
+                color: "#fff",
+                borderRadius: 12,
+                textAlign: "center",
+            }}
+        >
+            <div className="text-sm opacity-90">{title}</div>
+            <div className="text-2xl font-bold mt-2">
+                <CountUp end={Number(value) || 0} duration={1.8} separator="," decimals={decimals} />
+                {suffix && <span className="ml-1 text-sm">{suffix}</span>}
             </div>
-        </div>
+        </Card>
     );
 }
 
@@ -448,3 +428,248 @@ function StatSmall({ label, value }) {
         </div>
     );
 }
+/*
+
+// src/pages/SuperAdminDashboard.jsx
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import CountUp from "react-countup";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Table, Row, Col } from "antd";
+// import moment from "moment";
+import {
+import TopPerformers from './TopPerformers';
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    BarChart,
+    Bar,
+    Legend,
+} from "recharts";
+
+const { RangePicker } = DatePicker;
+const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+export default function SuperAdminDashboard() {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const token = localStorage.getItem("token");
+    const [dateRange, setDateRange] = useState([]);
+
+    useEffect(() => {
+        fetchSuperAdmin();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchSuperAdmin = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(
+                "https://api.maghni.acwad.tech/api/v1/dashboard/super-admin",
+                {
+                    params: {
+                        startDate: dateRange[0] ? dateRange[0].format("YYYY-MM-DD") : undefined,
+                        endDate: dateRange[1] ? dateRange[1].format("YYYY-MM-DD") : undefined,
+                    },
+                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                }
+            );
+
+            setData(res.data);
+            toast.success("Dashboard data loaded");
+        } catch (err) {
+            console.error("Error loading super-admin dashboard:", err);
+            toast.error("Failed to load dashboard data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="h-[70vh] flex items-center justify-center">
+                <PulseLoader color="#2563eb" size={12} />
+            </div>
+        );
+    }
+
+    if (!data) {
+        return (
+            <div className="p-6">
+                <ToastContainer />
+                <p className="text-red-600">No dashboard data available.</p>
+            </div>
+        );
+    }
+
+    const overview = data.overview || {};
+    const revenue = data.revenue || {};
+    const orders = data.orders || {};
+    const products = data.products || {};
+    const topPerformers = data.topPerformers || {};
+
+    // Columns for Antd Tables
+    const vendorColumns = [
+        { title: "Vendor", dataIndex: "vendorName", key: "vendorName" },
+        { title: "Revenue", dataIndex: "revenue", key: "revenue", render: (val) => `${Number(val).toLocaleString()} EGP` },
+        { title: "Orders", dataIndex: "orderCount", key: "orderCount" },
+    ];
+
+    const paymentMethodColumns = [
+        { title: "Method", dataIndex: "paymentMethod", key: "paymentMethod" },
+        { title: "Orders", dataIndex: "count", key: "count" },
+        { title: "Amount", dataIndex: "amount", key: "amount", render: (val) => `${Number(val).toLocaleString()} EGP` },
+    ];
+
+    const topProductsColumns = [
+        {
+            title: "Product", dataIndex: "productName", key: "productName", render: (name) => {
+                try { const parsed = JSON.parse(name); return parsed?.en || parsed?.ar || name; }
+                catch { return name; }
+            }
+        },
+        { title: "Sold", dataIndex: "totalSold", key: "totalSold" },
+        { title: "Revenue", dataIndex: "totalRevenue", key: "totalRevenue", render: (val) => `${Number(val).toLocaleString()} EGP` },
+        { title: "Orders", dataIndex: "orderCount", key: "orderCount", render: (val) => val ?? "-" },
+    ];
+
+    return (
+        <div className="p-6 bg-gray-50 min-h-screen">
+            <ToastContainer />
+
+            
+            <Row justify="space-between" className="mb-6">
+                <Col>
+                    <h1 className="text-3xl font-extrabold">Super Admin</h1>
+                </Col>
+                <Col>
+                    <RangePicker
+                        value={dateRange}
+                        onChange={(dates) => setDateRange(dates)}
+                        onOk={fetchSuperAdmin}
+                    />
+                </Col>
+            </Row>
+
+            
+            <Row gutter={[16, 16]} className="mb-6">
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Revenue" value={overview.totalRevenue} color="#10b981" suffix="EGP" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Orders" value={overview.totalOrders} color="#2563eb" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Users" value={overview.totalUsers} color="#4f46e5" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Products" value={overview.totalProducts} color="#facc15" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Total Vendors" value={overview.totalVendors} color="#ec4899" />
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <AntdStatCard title="Avg Order Value" value={overview.averageOrderValue} color="#8b5cf6" suffix="EGP" decimals={2} />
+                </Col>
+            </Row>
+
+            
+            <Card title="Revenue by Vendor" className="mb-6">
+                <Table
+                    dataSource={revenue.revenueByVendor || []}
+                    columns={vendorColumns}
+                    rowKey="vendorId"
+                    pagination={false}
+                />
+            </Card>
+
+            
+            <Card title="Orders by Payment Method" className="mb-6">
+                <Table
+                    dataSource={orders.ordersByPaymentMethod || []}
+                    columns={paymentMethodColumns}
+                    rowKey="paymentMethod"
+                    pagination={false}
+                />
+            </Card>
+
+            
+            <Card title="Top Selling Products" className="mb-6">
+                <Table
+                    dataSource={products.topSellingProducts || []}
+                    columns={topProductsColumns}
+                    rowKey="productId"
+                    pagination={false}
+                />
+            </Card>
+
+            
+            <Row gutter={[16, 16]} className="mb-6">
+                <Col xs={24} lg={12}>
+                    <Card title="Daily Revenue">
+                        {revenue.dailyRevenue && revenue.dailyRevenue.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={260}>
+                                <LineChart data={[...revenue.dailyRevenue].sort((a, b) => new Date(a.date) - new Date(b.date))}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" tickFormatter={d => new Date(d).toLocaleDateString()} />
+                                    <YAxis />
+                                    <Tooltip formatter={val => `${val} EGP`} labelFormatter={d => new Date(d).toLocaleString()} />
+                                    <Line type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={2} dot />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : <p>No data</p>}
+                    </Card>
+                </Col>
+
+                <Col xs={24} lg={12}>
+                    <Card title="Orders by Status">
+                        {orders.ordersByStatus && orders.ordersByStatus.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={260}>
+                                <PieChart>
+                                    <Pie data={orders.ordersByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={80} label>
+                                        {orders.ordersByStatus.map((_, idx) => <Cell key={idx} fill={COLORS[idx % COLORS.length]} />)}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : <p>No data</p>}
+                    </Card>
+                </Col>
+            </Row>
+
+        </div>
+    );
+}
+
+// ---------- Antd Stat Card ----------
+function AntdStatCard({ title, value, color = "#2563eb", suffix = "", decimals = 0 }) {
+    return (
+        <Card
+            bordered={false}
+            style={{
+                backgroundColor: color,
+                color: "#fff",
+                borderRadius: 12,
+                textAlign: "center",
+            }}
+        >
+            <div className="text-sm opacity-90">{title}</div>
+            <div className="text-2xl font-bold mt-2">
+                <CountUp end={Number(value) || 0} duration={1.8} separator="," decimals={decimals} />
+                {suffix && <span className="ml-1 text-sm">{suffix}</span>}
+            </div>
+        </Card>
+    );
+}
+
+*/
