@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { div } from "framer-motion/client";
+import { Spin } from "antd";
 
 export default function VendorsCategoriesStats() {
     const [categories, setCategories] = useState([]);
@@ -28,7 +30,9 @@ export default function VendorsCategoriesStats() {
         fetchData();
     }, []);
 
-    if (loading) return <p className="text-center text-gray-500">Loading...</p>;
+    if (loading) return <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+    </div>;
 
     return (
         <div className="space-y-6">
