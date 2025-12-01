@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { PulseLoader } from "react-spinners";
+import { Tabs, Table, Card, Spin, message } from "antd";
+import { UserOutlined, StarOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 
 const RecentActivity = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("orders");
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -15,126 +15,151 @@ const RecentActivity = () => {
                 );
                 setData(res.data);
             } catch (err) {
+                message.error("Failed to load recent activity");
                 console.error(err);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchActivity();
     }, []);
 
     if (loading)
         return (
             <div className="flex justify-center items-center h-[50vh]">
-                <PulseLoader color="#4f46e5" size={15} />
+                <Spin size="large" />
             </div>
         );
+
+    // 🟦 Columns for Orders
+    const orderColumns = [
+        { title: "Order #", dataIndex: "orderNumber", key: "orderNumber" },
+        {
+            title: "Customer",
+            dataIndex: ["user", "fullName"],
+            key: "customer",
+            render: (name) => name || "N/A",
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (val) => val?.toUpperCase(),
+        },
+        { title: "Total (EGP)", dataIndex: "totalAmount", key: "totalAmount" },
+        {
+            title: "Date",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (d) => new Date(d).toLocaleDateString(),
+        },
+    ];
+
+    // 🟩 Columns for Users
+    const userColumns = [
+        { title: "Name", dataIndex: "fullName", key: "fullName", render: (name) => name || "N/A" },
+        { title: "Email", dataIndex: "email", key: "email", render: (e) => e || "N/A" },
+        {
+            title: "Vendor",
+            dataIndex: "vendor",
+            key: "vendor",
+            render: (vendor) => vendor?.name || "-",
+        },
+        {
+            title: "Joined",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (d) => new Date(d).toLocaleDateString(),
+        },
+    ];
+
+    // 🟨 Columns for Reviews
+    const reviewColumns = [
+        {
+            title: "User",
+            dataIndex: ["user", "fullName"],
+            key: "user",
+        },
+        {
+            title: "Rating",
+            dataIndex: "rating",
+            key: "rating",
+        },
+        {
+            title: "Comment",
+            dataIndex: "comment",
+            key: "comment",
+        },
+        {
+            title: "Date",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (d) => new Date(d).toLocaleDateString(),
+        },
+    ];
 
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Recent Activity</h2>
 
-            {/* Tabs */}
-            <div className="flex gap-3 mb-6">
-                {[
-                    { key: "orders", label: "Recent Orders" },
-                    { key: "users", label: "Recent Users" },
-                    { key: "reviews", label: "Recent Reviews" },
-                ].map((tab) => (
-                    <button
-                        key={tab.key}
-                        onClick={() => setActiveTab(tab.key)}
-                        className={`px-4 py-2 rounded-lg font-semibold transition ${activeTab === tab.key
-                                ? "bg-indigo-600 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Tables */}
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-                {activeTab === "orders" && (
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th className="py-3 px-4 text-left">Order #</th>
-                                <th className="py-3 px-4 text-left">Customer</th>
-                                <th className="py-3 px-4 text-left">Status</th>
-                                <th className="py-3 px-4 text-left">Total</th>
-                                <th className="py-3 px-4 text-left">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data?.recentOrders?.map((order) => (
-                                <tr key={order.id} className="border-b hover:bg-gray-50">
-                                    <td className="py-3 px-4">{order.orderNumber}</td>
-                                    <td className="py-3 px-4">{order.user?.fullName || "N/A"}</td>
-                                    <td className="py-3 px-4 capitalize">{order.status}</td>
-                                    <td className="py-3 px-4">{order.totalAmount} EGP</td>
-                                    <td className="py-3 px-4">
-                                        {new Date(order.createdAt).toLocaleDateString()}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-
-                {activeTab === "users" && (
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th className="py-3 px-4 text-left">Name</th>
-                                <th className="py-3 px-4 text-left">Email</th>
-                                <th className="py-3 px-4 text-left">Vendor</th>
-                                <th className="py-3 px-4 text-left">Date Joined</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data?.recentUsers?.map((user) => (
-                                <tr key={user.id} className="border-b hover:bg-gray-50">
-                                    <td className="py-3 px-4">{user.fullName || "N/A"}</td>
-                                    <td className="py-3 px-4">{user.email}</td>
-                                    <td className="py-3 px-4">
-                                        {user.vendor ? user.vendor.name : "-"}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        {new Date(user.createdAt).toLocaleDateString()}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-
-                {activeTab === "reviews" && (
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th className="py-3 px-4 text-left">User</th>
-                                <th className="py-3 px-4 text-left">Rating</th>
-                                <th className="py-3 px-4 text-left">Comment</th>
-                                <th className="py-3 px-4 text-left">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data?.recentReviews?.map((review) => (
-                                <tr key={review.id} className="border-b hover:bg-gray-50">
-                                    <td className="py-3 px-4">{review.user?.fullName}</td>
-                                    <td className="py-3 px-4">{review.rating}</td>
-                                    <td className="py-3 px-4">{review.comment}</td>
-                                    <td className="py-3 px-4">
-                                        {new Date(review.createdAt).toLocaleDateString()}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+            <Card>
+                <Tabs
+                    defaultActiveKey="orders"
+                    items={[
+                        {
+                            key: "orders",
+                            label: (
+                                <span>
+                                    <ShoppingCartOutlined /> Recent Orders
+                                </span>
+                            ),
+                            children: (
+                                <Table
+                                    columns={orderColumns}
+                                    dataSource={data?.recentOrders}
+                                    rowKey="id"
+                                    pagination={{ pageSize: 5 }}
+                                    className="overflow-x-auto"
+                                />
+                            ),
+                        },
+                        {
+                            key: "users",
+                            label: (
+                                <span>
+                                    <UserOutlined /> Recent Users
+                                </span>
+                            ),
+                            children: (
+                                <Table
+                                    columns={userColumns}
+                                    dataSource={data?.recentUsers}
+                                    rowKey="id"
+                                    pagination={{ pageSize: 5 }}
+                                    className="overflow-x-auto"
+                                />
+                            ),
+                        },
+                        {
+                            key: "reviews",
+                            label: (
+                                <span>
+                                    <StarOutlined /> Recent Reviews
+                                </span>
+                            ),
+                            children: (
+                                <Table
+                                    columns={reviewColumns}
+                                    dataSource={data?.recentReviews}
+                                    rowKey="id"
+                                    pagination={{ pageSize: 5 }}
+                                />
+                            ),
+                        },
+                    ]}
+                />
+            </Card>
         </div>
     );
 };

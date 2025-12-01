@@ -1,12 +1,26 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import { PulseLoader } from "react-spinners";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+    ResponsiveContainer,
+} from "recharts";
 import { toast } from "react-toastify";
+
+// ANTD
+import { DatePicker, Select, Button, Card, Row, Col, Spin } from "antd";
+import dayjs from "dayjs";
+
+const { RangePicker } = DatePicker;
 
 const RevenueTimeline = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+
     const [filters, setFilters] = useState({
         startDate: "2025-06-01",
         endDate: "2025-10-21",
@@ -16,13 +30,26 @@ const RevenueTimeline = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
+            const token = localStorage.getItem("token");
+
             const res = await axios.get(
-                `https://api.maghni.acwad.tech/api/v1/dashboard/revenue/timeline?startDate=${filters.startDate}&endDate=${filters.endDate}&groupBy=${filters.groupBy}`
+                `https://api.maghni.acwad.tech/api/v1/dashboard/revenue/timeline`,
+                {
+                    params: {
+                        startDate: filters.startDate,
+                        endDate: filters.endDate,
+                        groupBy: filters.groupBy,
+                    },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
+
             setData(res.data);
             toast.success("Revenue timeline loaded successfully!");
-        } catch (err) {
-            console.error(err);
+        } catch (error) {
+            console.error(error);
             toast.error("Failed to fetch revenue timeline");
         } finally {
             setLoading(false);
@@ -34,56 +61,67 @@ const RevenueTimeline = () => {
     }, []);
 
     return (
-        <div className="p-6">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Revenue Timeline</h2>
-
+        <Card
+            title={<h2 className="text-xl font-bold">Revenue Timeline</h2>}
+            className="shadow-md"
+        >
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-6 items-end">
-                <div>
-                    <label className="block text-gray-600 font-medium mb-1">Start Date</label>
-                    <input
-                        type="date"
-                        className="border rounded-lg p-2"
-                        value={filters.startDate}
-                        onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                    />
-                </div>
+            <Row gutter={16} className="mb-6">
 
-                <div>
-                    <label className="block text-gray-600 font-medium mb-1">End Date</label>
-                    <input
-                        type="date"
-                        className="border rounded-lg p-2"
-                        value={filters.endDate}
-                        onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                {/* Date Range Picker */}
+                <Col xs={24} sm={12} lg={8}>
+                    <label className="block mb-2 text-gray-600 font-medium">Date Range</label>
+                    <RangePicker
+                        style={{ width: "100%" }}
+                        value={[
+                            filters.startDate ? dayjs(filters.startDate) : null,
+                            filters.endDate ? dayjs(filters.endDate) : null,
+                        ]}
+                        onChange={(dates) => {
+                            if (dates) {
+                                setFilters({
+                                    ...filters,
+                                    startDate: dates[0].format("YYYY-MM-DD"),
+                                    endDate: dates[1].format("YYYY-MM-DD"),
+                                });
+                            }
+                        }}
                     />
-                </div>
+                </Col>
 
-                <div>
-                    <label className="block text-gray-600 font-medium mb-1">Group By</label>
-                    <select
-                        className="border rounded-lg p-2"
+                {/* Group By */}
+                <Col xs={24} sm={12} lg={6}>
+                    <label className="block mb-2 text-gray-600 font-medium">Group By</label>
+                    <Select
+                        style={{ width: "100%" }}
                         value={filters.groupBy}
-                        onChange={(e) => setFilters({ ...filters, groupBy: e.target.value })}
+                        onChange={(value) =>
+                            setFilters({ ...filters, groupBy: value })
+                        }
+                        options={[
+                            { value: "day", label: "Day" },
+                            { value: "week", label: "Week" },
+                            { value: "month", label: "Month" },
+                        ]}
+                    />
+                </Col>
+
+                {/* Apply Button */}
+                <Col xs={24} sm={24} lg={4}>
+                    <Button
+                        type="primary"
+                        style={{ width: "100%", marginTop: 28 }}
+                        onClick={fetchData}
                     >
-                        <option value="day">Day</option>
-                        <option value="week">Week</option>
-                        <option value="month">Month</option>
-                    </select>
-                </div>
+                        Apply Filters
+                    </Button>
+                </Col>
+            </Row>
 
-                <button
-                    onClick={fetchData}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
-                >
-                    Apply Filters
-                </button>
-            </div>
-
-            {/* Chart or Loader */}
+            {/* Chart */}
             {loading ? (
-                <div className="flex justify-center items-center h-[50vh]">
-                    <PulseLoader color="#4f46e5" size={15} />
+                <div className="flex justify-center items-center py-16">
+                    <Spin size="large" />
                 </div>
             ) : data.length > 0 ? (
                 <ResponsiveContainer width="100%" height={400}>
@@ -92,14 +130,16 @@ const RevenueTimeline = () => {
                         <XAxis dataKey="period" />
                         <YAxis />
                         <Tooltip />
-                        <Line type="monotone" dataKey="revenue" stroke="#4f46e5" strokeWidth={3} />
-                        <Line type="monotone" dataKey="orderCount" stroke="#16a34a" strokeWidth={2} />
+                        <Line type="monotone" dataKey="revenue" stroke="#1677ff" strokeWidth={3} />
+                        <Line type="monotone" dataKey="orderCount" stroke="#52c41a" strokeWidth={3} />
                     </LineChart>
                 </ResponsiveContainer>
             ) : (
-                <p className="text-center text-gray-500 text-lg py-10">No data available for this range.</p>
+                <p className="text-center text-gray-500 py-10">
+                    No data available for this range.
+                </p>
             )}
-        </div>
+        </Card>
     );
 };
 

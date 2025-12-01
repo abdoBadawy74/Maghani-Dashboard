@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
 import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Button, Row, Col } from "antd";
 import {
     PieChart,
     Pie,
@@ -16,11 +17,13 @@ import {
     Legend,
 } from "recharts";
 
+const { RangePicker } = DatePicker;
+
 export default function OrdersTab() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
 
     const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -31,8 +34,8 @@ export default function OrdersTab() {
                 `https://api.maghni.acwad.tech/api/v1/dashboard/orders/status-breakdown`,
                 {
                     params: {
-                        startDate: startDate || undefined,
-                        endDate: endDate || undefined,
+                        startDate: startDate ? startDate.format("YYYY-MM-DD") : undefined,
+                        endDate: endDate ? endDate.format("YYYY-MM-DD") : undefined,
                     },
                 }
             );
@@ -44,7 +47,6 @@ export default function OrdersTab() {
         }
     };
 
-    // load once at mount
     useEffect(() => {
         fetchData();
     }, []);
@@ -54,38 +56,32 @@ export default function OrdersTab() {
             <h2 className="text-2xl font-bold mb-4">Orders Breakdown</h2>
 
             {/* Date Filter Section */}
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Start Date
-                    </label>
-                    <input
-                        type="date"
-                        className="border rounded-md px-2 py-1"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+            <Row gutter={16} className="mb-6">
+                <Col>
+                    <RangePicker
+                        value={
+                            startDate && endDate
+                                ? [startDate, endDate]
+                                : null
+                        }
+                        onChange={(values) => {
+                            if (values) {
+                                setStartDate(values[0]);
+                                setEndDate(values[1]);
+                            } else {
+                                setStartDate(null);
+                                setEndDate(null);
+                            }
+                        }}
+                        placeholder={["Start Date", "End Date"]}
                     />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        End Date
-                    </label>
-                    <input
-                        type="date"
-                        className="border rounded-md px-2 py-1"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-                </div>
-
-                <button
-                    onClick={fetchData}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition self-end"
-                >
-                    {loading ? "Loading..." : "Apply Filters"}
-                </button>
-            </div>
+                </Col>
+                <Col>
+                    <Button type="primary" onClick={fetchData} loading={loading}>
+                        Apply Filters
+                    </Button>
+                </Col>
+            </Row>
 
             {/* Loading Spinner */}
             {loading && (
@@ -103,30 +99,34 @@ export default function OrdersTab() {
             {!loading && data && (
                 <>
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <SummaryCard
-                            title="Average Items per Order"
-                            value={data.averageItemsPerOrder}
-                            color="bg-blue-500"
-                            suffix=""
-                        />
-                        <SummaryCard
-                            title="Completion Rate"
-                            value={data.completionRate}
-                            color="bg-green-500"
-                            suffix="%"
-                        />
-                        <SummaryCard
-                            title="Cancellation Rate"
-                            value={data.cancellationRate}
-                            color="bg-red-500"
-                            suffix="%"
-                        />
-                    </div>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={8}>
+                            <SummaryCard
+                                title="Average Items per Order"
+                                value={data.averageItemsPerOrder}
+                                color="#2563eb"
+                            />
+                        </Col>
+                        <Col xs={24} sm={8}>
+                            <SummaryCard
+                                title="Completion Rate"
+                                value={data.completionRate}
+                                color="#10b981"
+                                suffix="%"
+                            />
+                        </Col>
+                        <Col xs={24} sm={8}>
+                            <SummaryCard
+                                title="Cancellation Rate"
+                                value={data.cancellationRate}
+                                color="#ef4444"
+                                suffix="%"
+                            />
+                        </Col>
+                    </Row>
 
                     {/* Orders by Status */}
-                    <div className="bg-white shadow rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3">Orders by Status</h3>
+                    <Card title="Orders by Status" className="mt-6">
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -139,20 +139,20 @@ export default function OrdersTab() {
                                     label
                                 >
                                     {data.ordersByStatus.map((_, index) => (
-                                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                                        <Cell
+                                            key={index}
+                                            fill={COLORS[index % COLORS.length]}
+                                        />
                                     ))}
                                 </Pie>
                                 <Tooltip />
                                 <Legend />
                             </PieChart>
                         </ResponsiveContainer>
-                    </div>
+                    </Card>
 
                     {/* Orders by Payment Status */}
-                    <div className="bg-white shadow rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3">
-                            Orders by Payment Status
-                        </h3>
+                    <Card title="Orders by Payment Status" className="mt-6">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.ordersByPaymentStatus}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -164,13 +164,10 @@ export default function OrdersTab() {
                                 <Bar dataKey="amount" fill="#10b981" name="Amount (EGP)" />
                             </BarChart>
                         </ResponsiveContainer>
-                    </div>
+                    </Card>
 
                     {/* Orders by Payment Method */}
-                    <div className="bg-white shadow rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3">
-                            Orders by Payment Method
-                        </h3>
+                    <Card title="Orders by Payment Method" className="mt-6">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.ordersByPaymentMethod}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -182,21 +179,26 @@ export default function OrdersTab() {
                                 <Bar dataKey="amount" fill="#f59e0b" name="Amount (EGP)" />
                             </BarChart>
                         </ResponsiveContainer>
-                    </div>
+                    </Card>
                 </>
             )}
         </div>
     );
 }
 
-function SummaryCard({ title, value, color, suffix }) {
+function SummaryCard({ title, value, color, suffix = "" }) {
     return (
-        <div className={`p-5 rounded-xl text-white shadow ${color}`}>
+        <Card style={{ backgroundColor: color, color: "#fff" }}>
             <h4 className="text-sm uppercase opacity-80">{title}</h4>
             <p className="text-2xl font-bold mt-1">
-                <CountUp end={value || 0} duration={2.5} separator="," decimals={2} />{" "}
+                <CountUp
+                    end={value || 0}
+                    duration={2.5}
+                    separator=","
+                    decimals={2}
+                />{" "}
                 {suffix}
             </p>
-        </div>
+        </Card>
     );
 }

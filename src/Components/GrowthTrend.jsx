@@ -1,3 +1,5 @@
+import { Spin } from "antd";
+import { div } from "framer-motion/client";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -44,7 +46,9 @@ export default function GrowthTrend() {
             </div>
 
             {loading ? (
-                <p className="text-gray-500">Loading...</p>
+                <div className="flex justify-center items-center" style={{ height: 300 }}>
+                    <Spin size="large" />
+                </div>
             ) : data.length === 0 ? (
                 <p className="text-gray-500">No data found</p>
             ) : (

@@ -1,29 +1,19 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Card, Button, Spin, Form, Input, Modal, Row, Col } from "antd";
 
 export default function AppVersionSettings() {
   const token = localStorage.getItem("token");
   const [showPopup, setShowPopup] = useState(false);
-
   const [countries, setCountries] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
-
   const [updating, setUpdating] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [form] = Form.useForm();
 
-  const [form, setForm] = useState({
-    androidVersion: "",
-    androidEndDate: "",
-    androidUrl: "",
-    iosVersion: "",
-    iosEndDate: "",
-    iosUrl: "",
-  });
-
-  // --------------------------
   // Fetch Countries
-  // --------------------------
   const fetchCountries = async () => {
     try {
       setLoadingCountries(true);
@@ -43,23 +33,16 @@ export default function AppVersionSettings() {
     fetchCountries();
   }, []);
 
-  // --------------------------
   // Check version
-  // --------------------------
   const checkVersion = async () => {
     try {
       setChecking(true);
-
       const res = await axios.get(
         "https://api.maghni.acwad.tech/api/v1/app-version/check",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // console.log(res);
-      if (res.status === 200) {
-        toast.success("Version is up to date ✔️");
-      } else {
-        toast.info("Unexpected response from server");
-      }
+      if (res.status === 200) toast.success("Version is up to date ✔️");
+      else toast.info("Unexpected response from server");
     } catch (err) {
       toast.error("Failed to check version");
     } finally {
@@ -67,20 +50,17 @@ export default function AppVersionSettings() {
     }
   };
 
-  // --------------------------
   // Update version
-  // --------------------------
-  const updateVersion = async () => {
+  const updateVersion = async (values) => {
     try {
       setUpdating(true);
-
       await axios.post(
         "https://api.maghni.acwad.tech/api/v1/app-version/update",
-        form,
+        values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       toast.success("Version updated successfully ✔️");
+      setShowPopup(false);
     } catch (err) {
       toast.error("Failed to update version");
     } finally {
@@ -92,108 +72,94 @@ export default function AppVersionSettings() {
     <div className="p-6 grid gap-6">
       <ToastContainer />
 
-      {/* ------------------ CHECK VERSION CARD ------------------ */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-bold mb-2">Check App Version</h2>
+      {/* CHECK VERSION CARD */}
+      <Card title="Check App Version">
         <p className="text-gray-600 mb-4">
           Verify if the current app version is up to date.
         </p>
+        <Button type="primary" onClick={checkVersion} loading={checking}>
+          Check Version
+        </Button>
+      </Card>
 
-        <button
-          onClick={checkVersion}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-          disabled={checking}
-        >
-          {checking ? "Checking..." : "Check Version"}
-        </button>
-      </div>
-
-      {/* ------------------ COUNTRIES CARD ------------------ */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-bold mb-4">Countries Data</h2>
-
+      {/* COUNTRIES CARD */}
+      <Card title="Countries Data">
         {loadingCountries ? (
-          <p>Loading...</p>
+          <div className="flex justify-center py-10">
+            <Spin size="large" />
+          </div>
         ) : countries.length === 0 ? (
           <p className="text-gray-500">No countries data found.</p>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Row gutter={[16, 16]}>
             {countries.map((c) => (
-              <div
-                key={c.id}
-                className="border p-4 rounded-lg flex gap-3 items-center shadow-sm"
-              >
-                <img src={c.flag} alt={c.name} className="w-10 h-10 rounded" />
-                <div>
-                  <p className="font-semibold">{c.name}</p>
-                  <p className="text-sm text-gray-600">{c.phoneCode}</p>
-                  <p className="text-xs">Currency: {c.currency}</p>
-                </div>
-              </div>
+              <Col xs={24} sm={12} lg={8} key={c.id}>
+                <Card className="flex items-center gap-3" bordered>
+                  <img src={c.flag} alt={c.name} className="w-12 h-12 rounded" />
+                  <div>
+                    <p className="font-semibold">{c.name}</p>
+                    <p className="text-sm text-gray-600">{c.phoneCode}</p>
+                    <p className="text-xs">Currency: {c.currency}</p>
+                  </div>
+                </Card>
+              </Col>
             ))}
-          </div>
+          </Row>
         )}
-      </div>
+      </Card>
 
-      {/* ------------------ UPDATE VERSION CARD ------------------ */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-bold mb-4">Update App Version</h2>
-
-        <p className="text-gray-600 mb-4">
-          Update both Android & iOS application versions.
-        </p>
-
-        <button
-          onClick={() => setShowPopup(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg"
-        >
+      {/* UPDATE VERSION CARD */}
+      <Card title="Update App Version">
+        <p className="text-gray-600 mb-4">Update both Android & iOS application versions.</p>
+        <Button type="primary" onClick={() => setShowPopup(true)}>
           Open Update Form
-        </button>
-      </div>
-      {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-2xl">
-            <h2 className="text-2xl font-bold mb-4">Update App Version</h2>
+        </Button>
+      </Card>
 
-            {/* FORM */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.keys(form).map((key) => (
-                <div className="flex flex-col" key={key}>
-                  <label className="font-medium mb-1 capitalize">{key}</label>
-                  <input
-                    type="text"
-                    className="border px-3 py-2 rounded"
-                    value={form[key]}
-                    onChange={(e) =>
-                      setForm({ ...form, [key]: e.target.value })
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* BUTTONS */}
-            <div className="flex justify-end gap-3 mt-5">
-              <button
-                onClick={() => setShowPopup(false)}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={updateVersion}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg"
-                disabled={updating}
-              >
-                {updating ? "Updating..." : "Save Changes"}
-              </button>
-            </div>
+      {/* MODAL FORM */}
+      <Modal
+        title="Update App Version"
+        open={showPopup}
+        onCancel={() => setShowPopup(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={updateVersion}
+          initialValues={{
+            androidVersion: "",
+            androidEndDate: "",
+            androidUrl: "",
+            iosVersion: "",
+            iosEndDate: "",
+            iosUrl: "",
+          }}
+        >
+          <Row gutter={16}>
+            {[
+              { name: "androidVersion", label: "Android Version" },
+              { name: "androidEndDate", label: "Android End Date" },
+              { name: "androidUrl", label: "Android URL" },
+              { name: "iosVersion", label: "iOS Version" },
+              { name: "iosEndDate", label: "iOS End Date" },
+              { name: "iosUrl", label: "iOS URL" },
+            ].map((field) => (
+              <Col span={24} md={12} key={field.name}>
+                <Form.Item label={field.label} name={field.name}>
+                  <Input />
+                </Form.Item>
+              </Col>
+            ))}
+          </Row>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button onClick={() => setShowPopup(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={updating}>
+              Save Changes
+            </Button>
           </div>
-        </div>
-      )}
-
-
+        </Form>
+      </Modal>
     </div>
   );
 }

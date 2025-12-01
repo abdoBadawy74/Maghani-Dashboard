@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { MoonLoader } from "react-spinners";
+import { Spin } from "antd";
 
 export default function MostFavorited() {
     const [data, setData] = useState([]);
@@ -50,7 +51,7 @@ export default function MostFavorited() {
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <MoonLoader color="#3B82F6" />
+                    <Spin size="large" />
                 </div>
             ) : data.length === 0 ? (
                 <p className="text-gray-500 text-center">No favorite vendors found</p>

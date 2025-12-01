@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { MoonLoader } from "react-spinners";
+import { Spin } from "antd";
 
 export default function DeliveryTime() {
     const [data, setData] = useState([]);
@@ -31,7 +32,7 @@ export default function DeliveryTime() {
     if (loading)
         return (
             <div className="flex justify-center items-center h-64">
-                <MoonLoader color="#3B82F6" />
+                <Spin size="large" />
             </div>
         );
 

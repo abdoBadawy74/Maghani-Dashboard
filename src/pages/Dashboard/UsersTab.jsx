@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
-import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Button, Row, Col, Table, Spin } from "antd";
 import {
     LineChart,
     Line,
@@ -12,11 +12,13 @@ import {
     ResponsiveContainer,
 } from "recharts";
 
+const { RangePicker } = DatePicker;
+
 export default function UsersTab() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
 
     const fetchData = async () => {
         try {
@@ -24,7 +26,10 @@ export default function UsersTab() {
             const res = await axios.get(
                 "https://api.maghni.acwad.tech/api/v1/dashboard/users/statistics",
                 {
-                    params: { startDate, endDate },
+                    params: {
+                        startDate: startDate ? startDate.format("YYYY-MM-DD") : undefined,
+                        endDate: endDate ? endDate.format("YYYY-MM-DD") : undefined,
+                    },
                 }
             );
             setData(res.data);
@@ -42,7 +47,7 @@ export default function UsersTab() {
     if (loading)
         return (
             <div className="flex justify-center py-20">
-                <PulseLoader color="#4f46e5" />
+                <Spin size="large" />
             </div>
         );
 
@@ -51,96 +56,125 @@ export default function UsersTab() {
             <p className="text-center text-gray-600">No data available for users.</p>
         );
 
+    const columns = [
+        {
+            title: "Name",
+            dataIndex: "name",
+            key: "name",
+        },
+        {
+            title: "Email",
+            dataIndex: "email",
+            key: "email",
+        },
+        {
+            title: "Total Spent (EGP)",
+            dataIndex: "totalSpent",
+            key: "totalSpent",
+            render: (value) => <CountUp end={value || 0} duration={1.5} separator="," />,
+        },
+        {
+            title: "Orders",
+            dataIndex: "orderCount",
+            key: "orderCount",
+        },
+    ];
+
     return (
         <div className="space-y-8">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Users Statistics</h2>
-
-                <div className="flex gap-2 items-center">
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="border px-2 py-1 rounded"
-                    />
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="border px-2 py-1 rounded"
-                    />
-                    <button
-                        onClick={fetchData}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                    >
-                        {loading ? "Loading..." : "Apply Filters"}
-                    </button>
-                </div>
-            </div>
+            {/* Header & Date Filters */}
+            <Row justify="space-between" align="middle" className="mb-6">
+                <Col>
+                    <h2 className="text-2xl font-bold">Users Statistics</h2>
+                </Col>
+                <Col>
+                    <Row gutter={8} align="middle">
+                        <Col>
+                            <RangePicker
+                                value={
+                                    startDate && endDate
+                                        ? [startDate, endDate]
+                                        : null
+                                }
+                                onChange={(values) => {
+                                    if (values) {
+                                        setStartDate(values[0]);
+                                        setEndDate(values[1]);
+                                    } else {
+                                        setStartDate(null);
+                                        setEndDate(null);
+                                    }
+                                }}
+                                placeholder={["Start Date", "End Date"]}
+                            />
+                        </Col>
+                        <Col>
+                            <Button type="primary" onClick={fetchData} loading={loading}>
+                                Apply Filters
+                            </Button>
+                        </Col>
+                    </Row>
+                </Col>
+            </Row>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <SummaryCard title="Total Users" value={data.totalUsers} color="bg-blue-500" />
-                <SummaryCard title="New Users" value={data.newUsers} color="bg-green-500" />
-                <SummaryCard title="Active Users" value={data.activeUsers} color="bg-purple-500" />
-            </div>
+            <Row gutter={16}>
+                <Col xs={24} sm={8}>
+                    <SummaryCard title="Total Users" value={data.totalUsers} color="#2563eb" />
+                </Col>
+                <Col xs={24} sm={8}>
+                    <SummaryCard title="New Users" value={data.newUsers} color="#10b981" />
+                </Col>
+                <Col xs={24} sm={8}>
+                    <SummaryCard title="Active Users" value={data.activeUsers} color="#8b5cf6" />
+                </Col>
+            </Row>
 
             {/* User Growth Chart */}
-            <div className="bg-white shadow rounded-lg p-4">
-                <h3 className="font-semibold text-lg mb-3">User Growth Over Time</h3>
+            <Card title="User Growth Over Time" className="mt-6">
                 <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={data.userGrowth}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis
                             dataKey="date"
-                            tickFormatter={(d) => new Date(d).toLocaleDateString("en-GB")}
+                            tickFormatter={(d) =>
+                                new Date(d).toLocaleDateString("en-GB")
+                            }
                         />
                         <YAxis />
                         <Tooltip
                             formatter={(value) => [`${value} Users`, "New Users"]}
-                            labelFormatter={(d) => new Date(d).toLocaleDateString("en-GB")}
+                            labelFormatter={(d) =>
+                                new Date(d).toLocaleDateString("en-GB")
+                            }
                         />
                         <Line type="monotone" dataKey="count" stroke="#2563eb" strokeWidth={2} />
                     </LineChart>
                 </ResponsiveContainer>
-            </div>
+            </Card>
 
             {/* Top Spenders Table */}
-            <div className="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                <h3 className="font-semibold text-lg mb-3">Top Spenders</h3>
-                <table className="w-full border-collapse text-left">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="p-2 border">Name</th>
-                            <th className="p-2 border">Email</th>
-                            <th className="p-2 border">Total Spent (EGP)</th>
-                            <th className="p-2 border">Orders</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.topSpenders.map((u) => (
-                            <tr key={u.userId} className="border-b hover:bg-gray-50">
-                                <td className="p-2 border">{u.name}</td>
-                                <td className="p-2 border">{u.email}</td>
-                                <td className="p-2 border">{u.totalSpent}</td>
-                                <td className="p-2 border">{u.orderCount}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <Card title="Top Spenders" className="mt-6">
+                <Table
+                    dataSource={data.topSpenders}
+                    columns={columns}
+                    rowKey="userId"
+                    pagination={false}
+                    loading={loading}
+                    className="overflow-x-auto"
+                />
+            </Card>
         </div>
     );
 }
 
 function SummaryCard({ title, value, color }) {
     return (
-        <div className={`p-4 rounded-xl text-white shadow ${color}`}>
+        <Card style={{ backgroundColor: color, color: "#fff" }}>
             <h4 className="text-sm uppercase opacity-80">{title}</h4>
             <p className="text-2xl font-bold mt-1">
                 <CountUp end={value || 0} duration={2.5} separator="," />
             </p>
-        </div>
+        </Card>
     );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
-import { PulseLoader } from "react-spinners";
+import { Card, DatePicker, Button, Row, Col, Table, Spin } from "antd";
 import {
   BarChart,
   Bar,
@@ -12,11 +12,13 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+const { RangePicker } = DatePicker;
+
 export default function VendorsPerformanceTab() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -24,7 +26,10 @@ export default function VendorsPerformanceTab() {
       const res = await axios.get(
         "https://api.maghni.acwad.tech/api/v1/dashboard/vendors/performance",
         {
-          params: { startDate, endDate },
+          params: {
+            startDate: startDate ? startDate.format("YYYY-MM-DD") : undefined,
+            endDate: endDate ? endDate.format("YYYY-MM-DD") : undefined,
+          },
         }
       );
       setData(res.data);
@@ -42,7 +47,7 @@ export default function VendorsPerformanceTab() {
   if (loading)
     return (
       <div className="flex justify-center py-20">
-        <PulseLoader color="#4f46e5" />
+        <Spin size="large" />
       </div>
     );
 
@@ -51,43 +56,98 @@ export default function VendorsPerformanceTab() {
       <p className="text-center text-gray-600">No vendor performance data.</p>
     );
 
+  const performanceColumns = [
+    {
+      title: "Vendor Name",
+      dataIndex: "vendorName",
+      key: "vendorName",
+    },
+    {
+      title: "Orders",
+      dataIndex: "orderCount",
+      key: "orderCount",
+    },
+    {
+      title: "Total Revenue (EGP)",
+      dataIndex: "totalRevenue",
+      key: "totalRevenue",
+      render: (value) => <CountUp end={value || 0} duration={1.5} separator="," />,
+    },
+    {
+      title: "Avg Order Value (EGP)",
+      dataIndex: "averageOrderValue",
+      key: "averageOrderValue",
+      render: (value) => Number(value).toFixed(2),
+    },
+  ];
+
+  const ratingsColumns = [
+    {
+      title: "Vendor Name",
+      dataIndex: "vendorName",
+      key: "vendorName",
+    },
+    {
+      title: "Average Rating",
+      dataIndex: "averageRating",
+      key: "averageRating",
+    },
+    {
+      title: "Review Count",
+      dataIndex: "reviewCount",
+      key: "reviewCount",
+    },
+  ];
+
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Vendors Performance</h2>
-
-        <div className="flex gap-2 items-center">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border px-2 py-1 rounded"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border px-2 py-1 rounded"
-          />
-          <button
-            onClick={fetchData}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            Load Data
-          </button>
-        </div>
-      </div>
+      {/* Header & Date Filters */}
+      <Row justify="space-between" align="middle" className="mb-6">
+        <Col>
+          <h2 className="text-2xl font-bold">Vendors Performance</h2>
+        </Col>
+        <Col>
+          <Row gutter={8} align="middle">
+            <Col>
+              <RangePicker
+                value={
+                  startDate && endDate
+                    ? [startDate, endDate]
+                    : null
+                }
+                onChange={(values) => {
+                  if (values) {
+                    setStartDate(values[0]);
+                    setEndDate(values[1]);
+                  } else {
+                    setStartDate(null);
+                    setEndDate(null);
+                  }
+                }}
+                placeholder={["Start Date", "End Date"]}
+              />
+            </Col>
+            <Col>
+              <Button type="primary" onClick={fetchData} loading={loading}>
+                Load Data
+              </Button>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <SummaryCard title="Total Vendors" value={data.totalVendors} color="bg-blue-500" />
-        <SummaryCard title="Active Vendors" value={data.activeVendors} color="bg-green-500" />
-      </div>
+      <Row gutter={16}>
+        <Col xs={24} sm={12}>
+          <SummaryCard title="Total Vendors" value={data.totalVendors} color="#2563eb" />
+        </Col>
+        <Col xs={24} sm={12}>
+          <SummaryCard title="Active Vendors" value={data.activeVendors} color="#10b981" />
+        </Col>
+      </Row>
 
       {/* Vendor Performance Chart */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <h3 className="font-semibold text-lg mb-3">Revenue by Vendor</h3>
+      <Card title="Revenue by Vendor" className="mt-6">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data.vendorPerformance}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -97,56 +157,32 @@ export default function VendorsPerformanceTab() {
             <Bar dataKey="totalRevenue" fill="#2563eb" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </Card>
 
       {/* Vendor Performance Table */}
-      <div className="bg-white shadow rounded-lg p-4 overflow-x-auto">
-        <h3 className="font-semibold text-lg mb-3">Vendor Performance</h3>
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border">Vendor Name</th>
-              <th className="p-2 border">Orders</th>
-              <th className="p-2 border">Total Revenue (EGP)</th>
-              <th className="p-2 border">Avg Order Value (EGP)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.vendorPerformance.map((v) => (
-              <tr key={v.vendorId} className="border-b hover:bg-gray-50">
-                <td className="p-2 border">{v.vendorName}</td>
-                <td className="p-2 border">{v.orderCount}</td>
-                <td className="p-2 border">{v.totalRevenue}</td>
-                <td className="p-2 border">{v.averageOrderValue.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card title="Vendor Performance" className="mt-6">
+        <Table
+          dataSource={data.vendorPerformance}
+          columns={performanceColumns}
+          rowKey="vendorId"
+          pagination={false}
+          loading={loading}
+          className="overflow-x-auto"
+        />
+      </Card>
 
       {/* Vendor Ratings Table */}
       {data.vendorRatings?.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-4 overflow-x-auto">
-          <h3 className="font-semibold text-lg mb-3">Vendor Ratings</h3>
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2 border">Vendor Name</th>
-                <th className="p-2 border">Average Rating</th>
-                <th className="p-2 border">Review Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.vendorRatings.map((v) => (
-                <tr key={v.vendorId} className="border-b hover:bg-gray-50">
-                  <td className="p-2 border">{v.vendorName}</td>
-                  <td className="p-2 border">{v.averageRating}</td>
-                  <td className="p-2 border">{v.reviewCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card title="Vendor Ratings" className="mt-6">
+          <Table
+            dataSource={data.vendorRatings}
+            columns={ratingsColumns}
+            rowKey="vendorId"
+            pagination={false}
+            loading={loading}
+            className="overflow-x-auto"
+          />
+        </Card>
       )}
     </div>
   );
@@ -154,11 +190,11 @@ export default function VendorsPerformanceTab() {
 
 function SummaryCard({ title, value, color }) {
   return (
-    <div className={`p-4 rounded-xl text-white shadow ${color}`}>
+    <Card style={{ backgroundColor: color, color: "#fff" }}>
       <h4 className="text-sm uppercase opacity-80">{title}</h4>
       <p className="text-2xl font-bold mt-1">
         <CountUp end={value || 0} duration={2.5} separator="," />
       </p>
-    </div>
+    </Card>
   );
 }

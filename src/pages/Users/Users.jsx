@@ -1,9 +1,27 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { PulseLoader } from "react-spinners";
+import {
+    Table,
+    Input,
+    Button,
+    Modal,
+    Tag,
+    Pagination,
+    Spin,
+    Card,
+    Space,
+    Avatar,
+    message,
+} from "antd";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
+import {
+    EyeOutlined,
+    DeleteOutlined,
+    StopOutlined,
+    CheckOutlined,
+} from "@ant-design/icons";
 
 export default function UsersPage() {
     const [users, setUsers] = useState([]);
@@ -16,263 +34,325 @@ export default function UsersPage() {
     const [modalOpen, setModalOpen] = useState(false);
 
     const token = localStorage.getItem("token");
+    const baseHeaders = { Authorization: `Bearer ${token}` };
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (opts = {}) => {
         setLoading(true);
         try {
+            const p = opts.page ?? page;
+            const l = opts.limit ?? limit;
+            const kw = opts.keyword ?? keyword;
+
             const res = await axios.get(
-                `https://api.maghni.acwad.tech/api/v1/user?keyword=${keyword}&page=${page}&limit=${limit}&sortOrder=ASC`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                `https://api.maghni.acwad.tech/api/v1/user`,
+                {
+                    headers: baseHeaders,
+                    params: {
+                        keyword: kw || undefined,
+                        page: p,
+                        limit: l,
+                        sortOrder: "ASC",
+                    },
+                }
             );
-            setUsers(res.data.data.items || []);
-            setTotalPages(res.data.data.metadata.totalPages || 1);
+
+            const items = res.data?.data?.items || [];
+            const totalPages = res.data?.data?.metadata?.totalPages || 1;
+
+            setUsers(items);
+            setTotalPages(totalPages);
         } catch (err) {
+            console.error("fetchUsers error:", err);
             toast.error("❌ Failed to fetch users");
         } finally {
             setLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, limit]);
+
     const fetchUserDetails = async (id) => {
         try {
             const res = await axios.get(`https://api.maghni.acwad.tech/api/v1/user/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: baseHeaders,
             });
             setSelectedUser(res.data.data);
             setModalOpen(true);
-            toast.success("✅ User details loaded");
-        } catch {
+        } catch (err) {
+            console.error("fetchUserDetails error:", err);
             toast.error("❌ Failed to fetch user details");
         }
     };
 
     const toggleBlock = async (id) => {
         try {
+            const hide = message.loading("Processing...", 0);
             const res = await axios.patch(
                 `https://api.maghni.acwad.tech/api/v1/user/${id}/toggle-block`,
                 {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: baseHeaders }
             );
-            toast.success("🔄 " + res.data.message);
-            fetchUsers();
-        } catch {
+            hide();
+
+            // If response indicates success, update local users state immediately
+            if (res.status === 200) {
+                toast.success("🔄 " + (res.data?.message || "Status updated"));
+                setUsers((prev) =>
+                    prev.map((u) => {
+                        if (u.id === id) {
+                            // API toggles block — detect from response if provided, otherwise toggle based on current status
+                            const newStatus =
+                                res.data?.data?.status ?? (u.status === "blocked" ? "active" : "blocked");
+                            return { ...u, status: newStatus };
+                        }
+                        return u;
+                    })
+                );
+                // also refresh just in case to sync with server
+                fetchUsers();
+            } else {
+                toast.error("Failed to toggle block");
+            }
+        } catch (err) {
+            console.error("toggleBlock error:", err);
             toast.error("❌ Failed to toggle block status");
         }
     };
 
-    const deleteUser = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) return;
-        try {
-            await axios.delete(`https://api.maghni.acwad.tech/api/v1/user/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            toast.success("🗑️ User deleted successfully");
-            fetchUsers();
-        } catch {
-            toast.error("❌ Failed to delete user");
-        }
+    const deleteUser = (id) => {
+        Modal.confirm({
+            title: "Confirm Deletion",
+            content: "Are you sure you want to delete this user?",
+            okText: "Delete",
+            okType: "danger",
+            cancelText: "Cancel",
+            onOk: async () => {
+                try {
+                    const res = await axios.delete(`https://api.maghni.acwad.tech/api/v1/user/${id}`, {
+                        headers: baseHeaders,
+                    });
+
+                    if (res.status === 200 && (res.data?.success ?? true)) {
+                        // remove locally for instant UX
+                        setUsers((prev) => prev.filter((u) => u.id !== id));
+                        toast.success("🗑️ User deleted successfully");
+                        // sync from server
+                        fetchUsers();
+                    } else {
+                        console.error("deleteUser response:", res.data);
+                        toast.error(res.data?.message || "Failed to delete user");
+                    }
+                } catch (err) {
+                    console.error("deleteUser error:", err);
+                    toast.error("❌ Failed to delete user");
+                }
+            },
+        });
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, [page, limit]);
+    const columns = [
+        {
+            title: "#",
+            key: "index",
+            render: (_, __, idx) => (page - 1) * limit + idx + 1,
+            width: 60,
+        },
+        {
+            title: "Full Name",
+            dataIndex: "fullName",
+            key: "fullName",
+            render: (text, record) => (
+                <Space>
+                    <Avatar
+                        src={record.profileImage || null}
+                        alt={text}
+                        size="small"
+                        style={{ background: !record.profileImage ? "#87d068" : undefined }}
+                    >
+                        {!record.profileImage && (text ? text[0] : "?")}
+                    </Avatar>
+                    <span>{text}</span>
+                </Space>
+            ),
+        },
+        {
+            title: "Email",
+            dataIndex: "email",
+            key: "email",
+        },
+        {
+            title: "Role",
+            dataIndex: "role",
+            key: "role",
+            render: (role) => <Tag color="blue">{role}</Tag>,
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (status) =>
+                status === "blocked" ? <Tag color="red">Blocked</Tag> : <Tag color="green">Active</Tag>,
+        },
+        {
+            title: "Actions",
+            key: "actions",
+            render: (_, user) => (
+                <Space wrap>
+                    <Button icon={<EyeOutlined />} type="primary" onClick={() => fetchUserDetails(user.id)}>
+                        View
+                    </Button>
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        setPage(1);
-        fetchUsers();
-    };
+                    <Button
+                        icon={user.status === "blocked" ? <CheckOutlined /> : <StopOutlined />}
+                        type={user.status === "blocked" ? "default" : "dashed"}
+                        danger={user.status !== "blocked"}
+                        onClick={() => toggleBlock(user.id)}
+                    >
+                        {user.status === "blocked" ? "Unblock" : "Block"}
+                    </Button>
+
+                    <Button danger icon={<DeleteOutlined />} onClick={() => deleteUser(user.id)}>
+                        Delete
+                    </Button>
+                </Space>
+            ),
+        },
+    ];
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <ToastContainer position="top-right" autoClose={2000} />
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Users Management</h2>
 
+            <Card className="mb-6">
+                <Space wrap>
+                    <Input
+                        placeholder="Search user..."
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        style={{ width: 260 }}
+                        onPressEnter={() => {
+                            setPage(1);
+                            fetchUsers({ page: 1, limit, keyword });
+                        }}
+                    />
 
-            {/* Search & Limit */}
-            <form onSubmit={handleSearch} className="mb-6 flex flex-wrap items-center gap-3">
-                <input
-                    type="text"
-                    placeholder="Search by keyword..."
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/2"
-                />
-                <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
-                >
-                    Search
-                </button>
+                    <Button
+                        type="primary"
+                        onClick={() => {
+                            setPage(1);
+                            fetchUsers({ page: 1, limit, keyword });
+                        }}
+                    >
+                        Search
+                    </Button>
 
-                <div className="flex items-center gap-2">
-                    <label className="text-gray-700 font-medium">Limit:</label>
-                    <input
+                    <Input
                         type="number"
-                        min="1"
-                        max="100"
+                        min={1}
                         value={limit}
                         onChange={(e) => {
-                            const newLimit = Number(e.target.value);
-                            setLimit(newLimit > 0 ? newLimit : 1);
+                            const val = Number(e.target.value) || 1;
+                            setLimit(val);
                             setPage(1);
                         }}
-                        className="border border-gray-300 rounded-lg px-3 py-2 w-20"
+                        style={{ width: 110 }}
+                        addonBefore="Limit"
                     />
-                </div>
 
-                <Link to="/users/growth-trend" className="ml-auto bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700">
-                    View Growth Trend
-                </Link>
-            </form>
+                    <Link to="/users/growth-trend">
+                        <Button type="primary" style={{ background: "green" }}>
+                            View Growth Trend
+                        </Button>
+                    </Link>
+                </Space>
+            </Card>
 
-
-            {/* Table */}
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <PulseLoader color="#2563eb" size={12} />
+                    <Spin size="large" />
                 </div>
-            ) : users.length === 0 ? (
-                <div className="text-center text-red-500">No users found.</div>
             ) : (
-                <div className="overflow-x-auto bg-white rounded-lg shadow">
-                    <table className="min-w-full text-left">
-                        <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th className="p-3">#</th>
-                                <th className="p-3">Full Name</th>
-                                <th className="p-3">Email</th>
-                                <th className="p-3">Role</th>
-                                <th className="p-3">Status</th>
-                                <th className="p-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user, idx) => (
-                                <tr key={user.id} className="border-b hover:bg-gray-50 transition">
-                                    <td className="p-3">{(page - 1) * limit + idx + 1}</td>
-                                    <td className="p-3 font-medium">{user.fullName}</td>
-                                    <td className="p-3">{user.email}</td>
-                                    <td className="p-3 capitalize">{user.role}</td>
-                                    <td
-                                        className={`p-3 font-semibold ${user.status === "blocked"
-                                            ? "text-red-600"
-                                            : "text-green-600"
-                                            }`}
-                                    >
-                                        {user.status}
-                                    </td>
-                                    <td className="p-3 flex gap-2 flex-wrap">
-                                        <button
-                                            onClick={() => fetchUserDetails(user.id)}
-                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
-                                        >
-                                            View
-                                        </button>
-                                        <button
-                                            onClick={() => toggleBlock(user.id)}
-                                            className={`${user.status === "blocked"
-                                                ? "bg-green-500 hover:bg-green-600"
-                                                : "bg-yellow-500 hover:bg-yellow-600"
-                                                } text-white px-3 py-1 rounded-lg text-sm`}
-                                        >
-                                            {user.status === "blocked" ? "Unblock" : "Block"}
-                                        </button>
-                                        <button
-                                            onClick={() => deleteUser(user.id)}
-                                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <Table
+                    columns={columns}
+                    dataSource={users}
+                    rowKey="id"
+                    pagination={false}
+                    bordered
+                    className="overflow-x-auto"
+                />
             )}
 
-            {/* Pagination */}
-            <div className="flex justify-center items-center mt-6 gap-3">
-                <button
-                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                    disabled={page === 1}
-                    className={`px-4 py-2 rounded-lg ${page === 1
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
-                >
-                    Previous
-                </button>
-                <span className="text-gray-700 font-medium">
-                    Page {page} of {totalPages}
-                </span>
-                <button
-                    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={page === totalPages}
-                    className={`px-4 py-2 rounded-lg ${page === totalPages
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
-                >
-                    Next
-                </button>
+            <div className="mt-6 flex justify-center">
+                <Pagination
+                    current={page}
+                    total={totalPages * limit}
+                    pageSize={limit}
+                    onChange={(p) => setPage(p)}
+                    showSizeChanger={false}
+                />
             </div>
 
-            {/* User Details Modal */}
-            {modalOpen && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]">
-                        <button
-                            onClick={() => setModalOpen(false)}
-                            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-lg"
-                        >
-                            ✖
-                        </button>
+            <Modal
+                open={modalOpen}
+                onCancel={() => setModalOpen(false)}
+                footer={null}
+                title="User Details"
+                width={700}
+            >
+                {selectedUser ? (
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <Avatar
+                                src={selectedUser.profileImage || null}
+                                size={80}
+                                alt={selectedUser.fullName}
+                            >
+                                {!selectedUser.profileImage && (selectedUser.fullName ? selectedUser.fullName[0] : "?")}
+                            </Avatar>
 
-                        <div className="flex items-center gap-4 mb-4 border-b pb-3">
-                            <img
-                                src={selectedUser.profileImage || "https://via.placeholder.com/100"}
-                                alt="Profile"
-                                className="w-20 h-20 rounded-full object-cover border"
-                            />
                             <div>
-                                <h3 className="text-xl font-semibold text-gray-800">{selectedUser.fullName}</h3>
-                                <p className="text-gray-600">{selectedUser.email}</p>
-                                <p className="text-sm text-gray-500">Role: {selectedUser.role}</p>
+                                <h3 style={{ fontSize: 18, margin: 0 }}>{selectedUser.fullName}</h3>
+                                <div style={{ color: "#666" }}>{selectedUser.email}</div>
+                                <div style={{ color: "#999", fontSize: 12 }}>Role: {selectedUser.role}</div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 text-gray-700">
-                            <p><strong>Phone:</strong> {selectedUser.phoneNumber}</p>
-                            <p><strong>Gender:</strong> {selectedUser.gender}</p>
-                            <p><strong>Status:</strong> {selectedUser.status}</p>
-                            <p><strong>Email Verified:</strong> {selectedUser.isEmailVerified ? "Yes" : "No"}</p>
-                            <p><strong>Created:</strong> {new Date(selectedUser.createdAt).toLocaleString()}</p>
-                            <p><strong>Last Login:</strong> {selectedUser.lastLoginAt ? new Date(selectedUser.lastLoginAt).toLocaleString() : "N/A"}</p>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                            <div><b>Phone:</b> {selectedUser.phoneNumber || "—"}</div>
+                            <div><b>Gender:</b> {selectedUser.gender || "—"}</div>
+                            <div><b>Status:</b> {selectedUser.status}</div>
+                            <div><b>Email Verified:</b> {selectedUser.isEmailVerified ? "Yes" : "No"}</div>
+                            <div><b>Created:</b> {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : "—"}</div>
+                            <div><b>Last Login:</b> {selectedUser.lastLoginAt ? new Date(selectedUser.lastLoginAt).toLocaleString() : "N/A"}</div>
                         </div>
 
                         {selectedUser.vendor && (
-                            <div className="mt-6 border-t pt-3">
-                                <h4 className="text-lg font-semibold mb-2 text-gray-800">Vendor Details</h4>
-                                <div className="flex items-center gap-4">
-                                    <img
-                                        src={selectedUser.vendor.logo}
-                                        alt="Vendor Logo"
-                                        className="w-16 h-16 rounded object-cover border"
+                            <div style={{ borderTop: "1px solid #eee", paddingTop: 12 }}>
+                                <h4 style={{ marginBottom: 8 }}>Vendor Details</h4>
+                                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                    <Avatar
+                                        src={selectedUser.vendor.logo || null}
+                                        size={64}
+                                        alt={selectedUser.vendor.name}
                                     />
                                     <div>
-                                        <p><strong>Name:</strong> {selectedUser.vendor.name}</p>
-                                        <p><strong>Country:</strong> {selectedUser.vendor.country.name}</p>
-                                        <p><strong>Category:</strong> {selectedUser.vendor.publicCategory.name.ar}</p>
-                                        <p><strong>Delivery Fee:</strong> {selectedUser.vendor.deliveryFee} EGP</p>
+                                        <div><b>Name:</b> {selectedUser.vendor.name}</div>
+                                        <div><b>Country:</b> {selectedUser.vendor.country?.name || "—"}</div>
+                                        <div><b>Category:</b> {selectedUser.vendor.publicCategory?.name?.ar || "—"}</div>
+                                        <div><b>Delivery Fee:</b> {selectedUser.vendor.deliveryFee ?? "—"} EGP</div>
                                     </div>
                                 </div>
                             </div>
                         )}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <Spin />
+                )}
+            </Modal>
         </div>
     );
 }

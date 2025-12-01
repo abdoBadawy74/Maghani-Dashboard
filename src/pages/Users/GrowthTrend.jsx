@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { PulseLoader } from "react-spinners";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Spin, InputNumber, Button, Card, Space } from "antd";
 
 export default function GrowthTrend() {
     const [data, setData] = useState([]);
@@ -22,7 +30,7 @@ export default function GrowthTrend() {
             toast.success("Growth trend data loaded successfully!");
         } catch (err) {
             console.error(err);
-            toast.error("Failed to fetch growth trend data");
+            toast.error("❌ Failed to fetch growth trend data");
         } finally {
             setLoading(false);
         }
@@ -30,40 +38,39 @@ export default function GrowthTrend() {
 
     useEffect(() => {
         fetchGrowthTrend();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [days]);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <ToastContainer position="top-right" autoClose={2000} />
-
             <h2 className="text-2xl font-bold mb-6 text-gray-800">User Growth Trend</h2>
 
-            <div className="flex items-center gap-3 mb-6">
-                <label className="text-gray-700 font-medium">Days:</label>
-                <input
-                    type="number"
-                    min="1"
-                    max="365"
-                    value={days}
-                    onChange={(e) => setDays(Number(e.target.value))}
-                    className="border border-gray-300 rounded-lg px-3 py-2 w-24"
-                />
-                <button
-                    onClick={fetchGrowthTrend}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                >
-                    Refresh
-                </button>
-            </div>
+            {/* Days selection */}
+            <Card className="mb-6">
+                <Space>
+                    <label className="text-gray-700 font-medium">Days:</label>
+                    <InputNumber
+                        min={1}
+                        max={365}
+                        value={days}
+                        onChange={(value) => setDays(value)}
+                    />
+                    <Button type="primary" onClick={fetchGrowthTrend}>
+                        Refresh
+                    </Button>
+                </Space>
+            </Card>
 
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <PulseLoader color="#2563eb" size={12} />
-                </div>
-            ) : data.length === 0 ? (
-                <div className="text-center text-red-500">No growth data available.</div>
-            ) : (
-                <div className="bg-white rounded-lg shadow-lg p-6">
+            {/* Chart */}
+            <Card>
+                {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <Spin size="large" />
+                    </div>
+                ) : data.length === 0 ? (
+                    <div className="text-center text-red-500">No growth data available.</div>
+                ) : (
                     <ResponsiveContainer width="100%" height={400}>
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -96,8 +103,8 @@ export default function GrowthTrend() {
                             />
                         </LineChart>
                     </ResponsiveContainer>
-                </div>
-            )}
+                )}
+            </Card>
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Star } from "lucide-react";
+import { Spin } from "antd";
 
 export default function TopPerformingVendors() {
     const [vendors, setVendors] = useState([]);
@@ -50,7 +51,7 @@ export default function TopPerformingVendors() {
 
             {loading ? (
                 <div className="flex justify-center items-center h-64 text-gray-600 font-semibold">
-                    Loading vendors...
+                  <Spin size="large" />
                 </div>
             ) : !vendors.length ? (
                 <div className="text-center text-red-600 font-semibold">
