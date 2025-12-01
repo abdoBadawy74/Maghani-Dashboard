@@ -202,7 +202,7 @@ function ContactTab() {
           <Spin />
         </div>
       ) : (
-        <Table dataSource={contact} columns={columns} rowKey={(r) => r.type} pagination={false} />
+        <Table dataSource={contact} columns={columns} rowKey={(r) => r.type} pagination={false} className="overflow-x-auto" />
       )}
 
       <Modal
@@ -397,7 +397,7 @@ function HelpTab() {
           <Spin />
         </div>
       ) : (
-        <Table dataSource={helpCenter} columns={columns} rowKey="id" />
+        <Table dataSource={helpCenter} columns={columns} rowKey="id" className="overflow-x-auto"/>
       )}
 
       {/* Add Modal */}
@@ -609,7 +609,7 @@ function PoliciesTab() {
       {loading ? (
         <div style={{ padding: 24, textAlign: "center" }}><Spin /></div>
       ) : (
-        <Table dataSource={policies} columns={columns} rowKey="id" />
+        <Table dataSource={policies} columns={columns} rowKey="id" className="overflow-x-auto"/>
       )}
 
       {/* Add Modal */}

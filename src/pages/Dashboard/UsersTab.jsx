@@ -161,6 +161,7 @@ export default function UsersTab() {
                     rowKey="userId"
                     pagination={false}
                     loading={loading}
+                    className="overflow-x-auto"
                 />
             </Card>
         </div>

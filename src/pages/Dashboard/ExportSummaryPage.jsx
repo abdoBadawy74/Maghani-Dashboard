@@ -168,6 +168,7 @@ export default function DashboardReports() {
                   }))}
                   columns={topProductsColumns}
                   pagination={false}
+                  className="overflow-x-auto"
                 />
               </Card>
             </Col>
@@ -177,6 +178,7 @@ export default function DashboardReports() {
                   dataSource={summary.topPerformers.topVendors.map((v, i) => ({ key: i, ...v }))}
                   columns={topVendorsColumns}
                   pagination={false}
+                  className="overflow-x-auto"
                 />
               </Card>
             </Col>
@@ -238,6 +240,7 @@ export default function DashboardReports() {
                 dataSource={addons.map((a, i) => ({ key: i, ...a }))}
                 columns={addonsColumns}
                 pagination={false}
+                className="overflow-x-auto"
               />
             </Col>
             <Col xs={24} lg={12}>
@@ -260,7 +263,7 @@ export default function DashboardReports() {
       {/* Customers Lifetime Value */}
       {customers && customers.length > 0 && (
         <Card title="Customers Lifetime Value" className="mb-8">
-          <Table dataSource={customers.map((c, i) => ({ key: i, ...c }))} columns={customersColumns} pagination={false} />
+          <Table dataSource={customers.map((c, i) => ({ key: i, ...c }))} columns={customersColumns} pagination={false} className="overflow-x-auto" />
         </Card>
       )}
     </div>

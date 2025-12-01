@@ -172,6 +172,7 @@ export default function WalletAdminPage() {
                 loading={loading}
                 rowKey="id"
                 pagination={false}
+                className="overflow-x-auto"
             />
 
             {/* Pagination */}

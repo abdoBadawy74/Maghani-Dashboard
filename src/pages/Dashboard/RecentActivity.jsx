@@ -120,6 +120,7 @@ const RecentActivity = () => {
                                     dataSource={data?.recentOrders}
                                     rowKey="id"
                                     pagination={{ pageSize: 5 }}
+                                    className="overflow-x-auto"
                                 />
                             ),
                         },
@@ -136,6 +137,7 @@ const RecentActivity = () => {
                                     dataSource={data?.recentUsers}
                                     rowKey="id"
                                     pagination={{ pageSize: 5 }}
+                                    className="overflow-x-auto"
                                 />
                             ),
                         },

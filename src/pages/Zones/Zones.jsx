@@ -84,35 +84,35 @@ export default function ZonesDashboard() {
     }
   };
 
-const PageHeader = ({ title, extra }) => (
-  <div
-    style={{
-      background: "#fff",
-      padding: "16px 24px",
-      borderRadius: 8,
-      marginBottom: 16,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    }}
-  >
-    <h2 style={{ margin: 0 }}>{title}</h2>
-    <div>{extra}</div>
-  </div>
-);
+  const PageHeader = ({ title, extra }) => (
+    <div
+      style={{
+        background: "#fff",
+        padding: "16px 24px",
+        borderRadius: 8,
+        marginBottom: 16,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h2 style={{ margin: 0 }}>{title}</h2>
+      <div>{extra}</div>
+    </div>
+  );
 
 
   return (
     <div style={{ padding: 20 }}>
-    <PageHeader
-  title="Zones Management"
-  extra={[
-    <Button key="1" type="primary" onClick={handleAddClick}>
-      Add Zone
-    </Button>,
-  ]}
-/>
+      <PageHeader
+        title="Zones Management"
+        extra={[
+          <Button key="1" type="primary" onClick={handleAddClick}>
+            Add Zone
+          </Button>,
+        ]}
+      />
 
       <ZonesTable
         zones={zones}

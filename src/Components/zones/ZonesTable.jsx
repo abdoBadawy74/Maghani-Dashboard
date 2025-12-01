@@ -94,6 +94,7 @@ export default function ZonesTable({
         padding: 8,
       }}
       tableLayout="fixed"
+      className="overflow-x-auto"
     />
   );
 }

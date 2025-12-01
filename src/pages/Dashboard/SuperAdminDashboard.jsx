@@ -234,6 +234,7 @@ export default function SuperAdminDashboard() {
                                 columns={vendorColumns}
                                 rowKey="vendorId"
                                 pagination={false}
+                                className="overflow-x-auto"
                             />
                         </Card>
                     </>
@@ -271,6 +272,7 @@ export default function SuperAdminDashboard() {
                                     columns={paymentMethodColumns}
                                     rowKey="paymentMethod"
                                     pagination={false}
+                                    className="overflow-x-auto"
                                 />
                             </Card>
                         ) : (
@@ -292,6 +294,7 @@ export default function SuperAdminDashboard() {
                                 columns={topProductsColumns}
                                 rowKey="productId"
                                 pagination={false}
+                                className="overflow-x-auto"
                             />
                         </Card>
                     </div>
@@ -312,6 +315,7 @@ export default function SuperAdminDashboard() {
                                 columns={topPerformersColumns}
                                 rowKey="vendorId"
                                 pagination={false}
+                                className="overflow-x-auto"
                             />
                         </Card>
                     ) : (

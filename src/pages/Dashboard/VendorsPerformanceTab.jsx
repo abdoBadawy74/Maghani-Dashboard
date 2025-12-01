@@ -167,6 +167,7 @@ export default function VendorsPerformanceTab() {
           rowKey="vendorId"
           pagination={false}
           loading={loading}
+          className="overflow-x-auto"
         />
       </Card>
 
@@ -179,6 +180,7 @@ export default function VendorsPerformanceTab() {
             rowKey="vendorId"
             pagination={false}
             loading={loading}
+            className="overflow-x-auto"
           />
         </Card>
       )}

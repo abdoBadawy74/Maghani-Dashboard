@@ -282,6 +282,7 @@ export default function UsersPage() {
                     rowKey="id"
                     pagination={false}
                     bordered
+                    className="overflow-x-auto"
                 />
             )}
 

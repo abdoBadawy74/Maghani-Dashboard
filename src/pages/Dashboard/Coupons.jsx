@@ -117,6 +117,7 @@ export default function CouponsUsage() {
                 columns={columns}
                 loading={loading}
                 bordered
+                className="overflow-x-auto"
             />
         </div>
     );

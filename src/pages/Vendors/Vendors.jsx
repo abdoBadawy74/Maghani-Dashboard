@@ -260,7 +260,7 @@ export default function Vendors() {
                     columns={columns}
                     rowKey="id"
                     pagination={{ pageSize: 10 }}
-                    className="bg-white p-4 rounded shadow"
+                    className="bg-white p-4 rounded shadow overflow-x-auto"
                 />
             </Spin>
         </div>

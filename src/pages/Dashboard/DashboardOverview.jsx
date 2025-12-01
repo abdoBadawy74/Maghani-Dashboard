@@ -163,6 +163,7 @@ const RevenueBreakdown = () => {
                     dataSource={data?.revenueByVendor}
                     rowKey="vendorId"
                     pagination={{ pageSize: 5 }}
+                    className="overflow-x-auto"
                 />
             </Card>
 
@@ -173,6 +174,7 @@ const RevenueBreakdown = () => {
                     dataSource={data?.dailyRevenue}
                     rowKey="date"
                     pagination={{ pageSize: 7 }}
+                    className="overflow-x-auto"
                 />
             </Card>
 
