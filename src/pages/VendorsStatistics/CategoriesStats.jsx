@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { div } from "framer-motion/client";
 import { Spin } from "antd";
 
 export default function VendorsCategoriesStats() {
