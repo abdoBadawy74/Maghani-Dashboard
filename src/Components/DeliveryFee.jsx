@@ -1,3 +1,4 @@
+import { Spin } from "antd";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -38,7 +39,9 @@ export default function DeliveryFee() {
             <h2 className="text-lg font-bold mb-4">Delivery Fee Distribution</h2>
 
             {loading ? (
-                <p className="text-gray-500">Loading data...</p>
+              <div className="flex justify-center items-center" style={{ height: 300 }}>
+                 <Spin size="large" />
+              </div>
             ) : data.length === 0 ? (
                 <p className="text-gray-500">No data available.</p>
             ) : (
